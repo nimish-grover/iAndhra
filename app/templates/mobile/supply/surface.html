@@ -1,0 +1,156 @@
+{% extends 'mobile/base.html' %}
+{% block title %} Surface Water {% endblock %}
+{% from 'mobile/components.html' import select, block_button, chart, table_title, badge, table_head %}
+{% block content %}
+<div class="row">
+    <div class="col"></div>
+    <div class="col-8 text-center">
+        {{table_title(title='Surface Waterbodies', subtitle='')}}
+    </div>
+    <div class="col">
+        {% if is_approved %}
+        {{badge()}}
+        {% endif %}
+    </div>
+</div>
+<div id="cardCarousel" class="carousel slide">
+    <div class="carousel-inner">
+      <div class="carousel-item active"> 
+        {%if not waterbodies%}
+        <div class="alert alert-warning mt-2" role="alert">
+            No data available for this Village
+        </div>
+        {%endif%}       
+        {{chart()}}
+      </div>
+      <div class="carousel-item">
+        {%if not waterbodies%}
+        <div class="alert alert-warning mt-2" role="alert">
+            No data available for this Village
+        </div>
+        {%else%}
+        <table class="table table-bordered  border-light table-sm fs-7 mb-0">
+            {{table_head(headings=[
+                {'heading':'Waterbody','subheading':'(type/description)'},
+                {'heading':'Count','subheading':'(in numbers)'},
+                {'heading':'Storage','subheading':'(in Ha M)'},
+                ])}}
+            <!-- <thead>
+                <tr>
+                    <th>S.No.</th>
+                    <th>Waterbody</th>
+                    <th>Count</th>
+                    <th>Storage</th>
+                </tr>
+            </thead> -->
+            <tbody>
+                {% for waterbody in waterbodies %}
+                <tr>
+                    <td class="text-start">{{waterbody.category | upper()}}</td>
+                    <td class="text-end">{{waterbody.count | indian_format}}</td>
+                    <td class="text-end">{{waterbody.value | indian_format}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="fw-semibold">
+                    <td >Total</td>
+                    <td class="text-end">{{ waterbodies | map(attribute='count') | sum | indian_format }}</td>
+                    <td class="text-end">{{ waterbodies | map(attribute='value') | sum | indian_format }}</td>
+                </tr>
+            </tfoot>
+        </table>
+        {%endif%}  
+      </div>
+    </div>
+  </div>
+  <input type="hidden" name="chartData" id="chartData" value="{{chart_data}}">
+{% endblock %}
+{% block scripts %}
+<script>
+    var chartDom = document.getElementById('main');
+    var myChart = echarts.init(chartDom);
+    let chart_data = JSON.parse(document.getElementById('chartData').value)
+    const category = chart_data.slice(0, 6).map(item => item.category);
+    const values = chart_data.slice(0, 6).map(item => item.value);
+    var option;
+
+    option = {
+        grid:{
+            left: 50,
+        },
+        title:{
+            text:'Storage (in Ha M)',
+            top:'bottom',
+            left:'center'
+        },
+        xAxis: {
+            // max: 'dataMax'
+        },
+        tooltip:{},
+        yAxis: {
+            type: 'category',
+            data: toTitleCase(category),
+            axisLabel: {
+                fontSize: 8
+            }
+        },
+        series: [
+            {
+            name: 'Storage',
+            type: 'bar',
+            data: transformArray(values,
+            chart_data.map(item => item.background) 
+            // [  
+                // '#c23531',
+                // '#2f4554',
+                // '#61a0a8',
+                // '#d48265',
+                // '#91c7ae',
+                // '#749f83',
+                // '#ca8622',
+                // '#bda29a',
+                // '#6e7074',
+                // '#546570',
+                // '#c4ccd3'
+            // ]
+        ),
+            // label: {
+            //     show: true,
+            //     position: 'right',
+            //     valueAnimation: true
+            // }
+            }
+        ],
+        legend: {
+            show: false
+        },
+    };
+
+    option && myChart.setOption(option);
+
+    function transformArray(input_array, color) {
+    let output_array = [];
+    input_array.forEach((value, idx) => {
+        object = {
+        value: value, // to convert to Th Ha M
+        itemStyle: {
+            color: color[idx]
+        }
+        }
+        output_array.push(object);
+    });
+    return output_array;
+    }
+
+    function toTitleCase(strings) {
+        return strings.map(item => 
+            item
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ')
+        );
+    }
+</script>
+{% endblock %}

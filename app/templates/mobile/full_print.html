@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Budget</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="icon" type="image/png" href="{{url_for('static', filename='assets/drop.png')}}">
+
+    <style>
+        :root {
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+    --spinner-border-color: #4D658D;
+    --spinner-before-color: #D4CC6A;
+    --spinner-after-color: #84417C;
+    --spinner-text-color: #999;
+    --header-bg-color: #666;
+    --content-bg-color: #888;
+    --font-family: 'PT Sans Narrow', sans-serif;
+}
+
+.spinner {
+  display: block; /* Visible by default */
+}
+
+.overlay {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: var(--overlay-bg);
+  z-index: 9999;
+}
+
+#loading-wrapper {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+#loading-text {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: var(--spinner-text-color);
+  width: 100px;
+  height: 30px;
+  margin: -7px 0 0 -45px;
+  text-align: center;
+  font-family: var(--font-family);
+  font-size: 20px;
+}
+
+#loading-content {
+  display: block;
+  position: relative;
+  left: 50%;
+  top: 50%;
+  width: 170px;
+  height: 170px;
+  margin: -85px 0 0 -85px;
+  border: 3px solid transparent;
+  border-top-color: var(--spinner-border-color);
+  border-bottom-color: var(--spinner-border-color);
+  border-radius: 50%;
+  animation: loader 2s linear infinite;
+}
+
+#loading-content::before,
+#loading-content::after {
+  content: "";
+  position: absolute;
+  border: 3px solid transparent;
+  border-radius: 50%;
+}
+
+#loading-content::before {
+  border-top-color: var(--spinner-before-color);
+  border-bottom-color: var(--spinner-before-color);
+  left: 5px;
+  right: 5px;
+  top: 5px;
+  bottom: 5px;
+  animation: loader 3s linear infinite;
+}
+
+#loading-content::after {
+  border-top-color: var(--spinner-after-color);
+  border-bottom-color: var(--spinner-after-color);
+  left: 15px;
+  right: 15px;
+  top: 15px;
+  bottom: 15px;
+  animation: loader 1.5s linear infinite;
+}
+
+@keyframes loader {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+#content-wrapper {
+  color: #FFF;
+  position: fixed;
+  left: 0;
+  top: 20px;
+  width: 100%;
+  height: 100%;
+}
+
+#header {
+  width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  height: 100px;
+  background-color: var(--header-bg-color);
+}
+
+#content {
+  width: 800px;
+  height: 1000px;
+  margin: 0 auto;
+  text-align: center;
+  background-color: var(--content-bg-color);
+}
+
+/* END OVERLAY */
+        .fs-5 {
+            font-size: 1rem !important;
+        }
+
+        .fs-6 {
+            font-size: 0.75rem !important;
+        }
+
+        .fs-7 {
+            font-size: 0.6rem !important;
+        }
+
+        /* .table-fixed-size {
+            table-layout: fixed;
+        } */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                /* For Safari/Chrome */
+                print-color-adjust: exact;
+                /* Standard property */
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <!--Overlay-->
+    <div id="loading-spinner" class="overlay">
+        <!--Spinner-->
+        <div id="loading-wrapper">
+          <div id="loading-text">LOADING</div>
+          <div id="loading-content"></div>
+        </div>
+    </div>
+    <div class="container px-5 d-print-none">
+        <nav class="navbar navbar-expand-lg bg-transparent border-bottom p-0 border-dark">
+            <div class="container-fluid d-flex justify-content-between mb-3">
+                <img src="{{url_for('static',filename='assets/niti_logo.png')}}" alt="niti_logo" height="40px" class="ms-3">
+                <img src="{{url_for('static',filename='assets/jalagam.png')}}" alt="jalagam" height="40px" class="me-4">
+                <img src="{{url_for('static',filename='assets/giz_logo.png')}}" alt="giz_logo" height="40px">
+            </div>
+        </nav>
+    
+        <div class="text-center fw-bold fs-5 mx-3 mt-2" style="background:#dee2e6;">BASIC INFORMATION</div>
+        <div class="container-fl justify-content-center m-0 fs-7 mb-3 px-3">
+            <table class="table table-sm table-fixed-sizes">
+                <tr>
+                    <th style="width: 30% !important;">State</th>
+                    <td class="text-start">{{payload['state_name']}}</td>
+                </tr>
+                <tr>
+                    <th style="width: 30% !important;">District</th>
+                    <td class="text-start">{{payload['district_name']}}</td>
+                </tr>
+                <tr>
+                    <th style="width: 30% !important;">Block</th>
+                    <td class="text-start">{{payload['block_name']}}</td>
+                </tr>
+                <tr>
+                    <th style="width: 30% !important;">No. of Villages</th>
+                    <td class="text-start">{{village_count}}</td>
+                </tr>
+                <tr>
+                    <th style="width: 30% !important;">TGA</th>
+                    <td class="text-start">{{tga}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="row mb-2 mx-0">
+            <div class="col-8 mt-1 px-3">
+                <div class="text-center fw-bold fs-5 ps-2" style="background:#dee2e6;">DEMAND</div>
+                <div class="row ps-2" style="height: 98% !important;">
+                    <div class="col-6 mt-1 px-2 " style="border-right: 1px solid lightgray;">
+                        <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">a) Human(in HaM)</div>
+                        <div class="container justify-content-center m-0 fs-7 mb-3">
+                            <table class="table table-sm table-fixed-size my-1">
+                                <tr>
+                                    <th>Description</th>
+                                    <th class="text-end">Population</th>
+                                    <th class="text-end">Consumption</th>
+                                </tr>
+                                {% for item in human_data %}
+                                <tr>
+                                    <td>{{item['category'] | title}}</td>
+                                    <td class="text-end">{{item['count']}}</td>
+                                    <td class="text-end">{{item['value']}}</td>
+                                </tr>
+                                {%endfor%}
+                                
+                                    <tr>
+                                        <td colspan="1" class="text-center fw-semibold">Total</td>
+                                        <td class="text-end fw-semibold">{{ human_data | map(attribute='count') | sum | round(0)
+                                            }}
+                                        </td>
+                                        <td class="text-end fw-semibold">{{ human_data | map(attribute='value') | sum | round(0)
+                                            }}
+                                        </td>
+                                    </tr>
+                                
+                            </table>
+                        </div>
+                        <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">b) Crops(in HaM)</div>
+                        <div class="container justify-content-center m-0 fs-7 mb-3">
+                            <table class="table table-sm table-fixed-size my-1">
+                                <tr>
+                                    <th>Crop Name</th>
+                                    <th class="text-end">Area</th>
+                                    <th class="text-end">Consumption</th>
+                                </tr>
+                                {%for item in crop_data%}
+                                <tr>
+                                    <td>{{item['category'] | title}}</td>
+                                    <td class="text-end">{{item['count']}}</td>
+                                    <td class="text-end">{{item['value']}}</td>
+                                </tr>
+                                {%endfor%}                                
+                                    <tr>
+                                        <td colspan="1" class="text-center fw-semibold">Total</td>
+                                        <td class="text-end fw-semibold">{{ crop_data | map(attribute='count') | sum | round(0)
+                                            }}
+                                        </td>
+                                        <td class="text-end fw-semibold">{{ crop_data | map(attribute='value') | sum | round(0)
+                                            }}
+                                        </td>
+                                    </tr>                               
+                            </table>
+                        </div>        
+                    </div>        
+                    <div class="col-6 mt-1 px-2">        
+                        <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">c) Livestock(in HaM)</div>
+                        <div class="container justify-content-center m-0 fs-7 mb-3">
+                            <table class="table table-sm table-fixed-size my-1">
+                                <tr>
+                                    <th>Description</th>
+                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Consumption</th>
+                                </tr>
+                                {%for item in livestock_data%}
+                                <tr>
+                                    <td>{{item['category'] | title}}</td>
+                                    <td class="text-end">{{item['count']}}</td>
+                                    <td class="text-end">{{item['value']}}</td>
+                                </tr>
+                                {%endfor%}
+                                
+                                    <tr>
+                                        <td colspan="1" class="text-center fw-semibold">Total</td>
+                                        <td class="text-end fw-semibold">{{ livestock_data | map(attribute='count') | sum |
+                                            round(0)
+                                            }}</td>
+                                        <td class="text-end fw-semibold">{{ livestock_data | map(attribute='value') | sum |
+                                            round(0)
+                                            }}</td>
+                                    </tr>
+                                
+                            </table>
+                        </div>
+                        <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">d) Industry(in HaM)</div>
+                        <div class="container justify-content-center m-0 fs-7 mb-3">
+                            {%if industry_data%}
+                            <table class="table table-sm table-fixed-size my-1">
+                                <tr>
+                                    <th>Industry Sector</th>
+                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Water Allocation</th>
+                                </tr>
+                                {%for item in industry_data%}
+                                <tr>
+                                    <td>{{item.category | title}}</td>
+                                    <td class="text-end">{{item.count}}</td>
+                                    <td class="text-end">{{'%0.2f'|format(item.value|float)}}</td>
+                                </tr>
+                                {%endfor%}
+                                <tr>
+                                    <td colspan="1" class="text-center fw-semibold">Total</td>
+                                    <td class="text-end fw-semibold">{{ industry_data | map(attribute='count') | sum |
+                                        round(0)
+                                        }}</td>
+                                    <td class="text-end fw-semibold">{{ industry_data | map(attribute='value') | sum |
+                                        round(0)
+                                        }}</td>
+                                </tr>
+                            </table>
+                            {%else%}
+                            There are no industry in this block
+                            {%endif%}
+                        </div>
+                    </div>
+                </div>
+    
+            </div>
+            <div class="col-4 mt-1 px-3" style="border-left: 1px solid lightgray;">
+                <div class="text-center fw-bold fs-5" style="background:#dee2e6;">SUPPLY</div>
+                <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">a) Surface Water(in HaM)</div>
+                <div class="container justify-content-center m-0 fs-7 mb-3">
+                    <table class="table table-sm table-fixed-size my-1">
+                        <tr>
+                            <th>Water Body</th>
+                            <th class="text-end">Count</th>
+                            <th class="text-end">Storage Capacity</th>
+                        </tr>
+                        {%for item in surface_water_data%}
+                        <tr>
+                            <td>{{item['category'] | title}}</td>
+                            <td class="text-end">{{item['count']}}</td>
+                            <td class="text-end">{{item['value']}}</td>
+                        </tr>
+                        {%endfor%}
+                        
+                            <tr>
+                                <td colspan="1" class="text-center fw-semibold">Total</td>
+                                <td class="text-end fw-semibold">{{ surface_water_data | map(attribute='count') | sum |
+                                    round(0) }}</td>
+                                <td class="text-end fw-semibold">{{ surface_water_data | map(attribute='value') | sum |
+                                    round(0) }}</td>
+                            </tr>
+                        
+                    </table>
+                </div>
+                <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">b) Groundwater(in HaM)</div>
+                <div class="container justify-content-center m-0 fs-7 mb-3">
+                    <table class="table table-sm table-fixed-size my-1">
+                        <tr>
+                            <th>Description</th>
+                            <th class="text-end">Value</th>
+                        </tr>
+                        {%for item in groundwater_data%}
+                        <tr>
+                            <td>{{item['name'] | title}}</td>
+                            <td class="text-end">{{item['value']}}</td>
+                        </tr>
+                        {%endfor%}
+                    </table>
+                </div>
+                <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">c) Runoff(in HaM)</div>
+                <div class="container justify-content-center m-0 fs-7 mb-3">
+                    <table class="table table-sm table-fixed-size my-1">
+                        <tr>
+                            <th>Catchment</th>
+                            <th class="text-end">% Runoff</th>
+                            <th class="text-end">Yield</th>
+                            <th class="text-end">Available</th>
+                        </tr>
+                        {%for item in runoff_data%}
+                        <tr>
+                            <td>{{item['catchment'] | title }}</td>
+                            <td class="text-end">{{item['runoff']}}</td>
+                            <td class="text-end">{{item['runoff_yield']}}</td>
+                            <td class="text-end">{{item['supply']}}</td>
+                        </tr>
+                        {%endfor%}
+                    </table>
+                </div>
+                <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">d) Rainfall(in mm)</div>
+                <div class="container justify-content-center m-0 fs-7 mb-3">
+                    <table class="table table-sm table-fixed-size my-1">
+                        <tr>
+                            <th>Month-Year</th>
+                            <th class="text-end">Actual</th>
+                            <th class="text-end">Normal</th>
+                        </tr>
+                        {%for item in rainfall_data%}
+                        <tr>
+                            <td>{{item['month']}}</td>
+                            <td class="text-end">{{item['actual']}}</td>
+                            <td class="text-end">{{item['normal']}}</td>
+                        </tr>
+                        {%endfor%}
+                        
+                            <tr>
+                                <td colspan="1" class="text-center fw-semibold">Total</td>
+                                <td class="text-end fw-semibold">{{ rainfall_data | map(attribute='actual') | sum |
+                                    round(0) }}</td>
+                                <td class="text-end fw-semibold">{{ rainfall_data | map(attribute='normal') | sum |
+                                    round(0) }}</td>
+                            </tr>
+                        
+                    </table>
+                </div>
+            </div>
+    
+    
+        </div>
+        <div class="text-center fw-bold fs-5 mx-1" style="background:#dee2e6;">WATER BUDGET</div>
+        <div class="container-fluid justify-content-center m-0 fs-7 mb-3">
+            <table class="table table-sm table-fixed-size my-1">
+                <tr>
+                    <th>Description</th>
+                    <th class="text-end">Value</th>
+                </tr>
+                <tr>
+                    <td colspan="2" class="text-center fw-bold">Demand</td>
+                </tr>
+                {% for row in demand_side %}
+                <tr>
+                    <td class="text-start">{{row.category | title}}</td>
+                    <td class="text-end">{{'%0.2f'|format(row.water_value|float)}}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="2" class="text-center fw-bold">Supply</td>
+                </tr>
+                {% for row in supply_side %}
+                <tr>
+                    <td class="text-start">{{row.category | title}}</td>
+                    <td class="text-end">{{'%0.2f'|format(row.water_value|float)}}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="2" class="text-center fw-bold">Budget</td>
+                </tr>
+                {% for row in water_budget %}
+                <tr>
+                    <td class="text-start">{{row.category | title}}</td>
+                    <td class="text-end">{{'%0.2f'|format(row.water_value|float)}}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    {% set total_supply = water_budget[1]['water_value'] %}
+                    {% set total_demand = water_budget[0]['water_value'] %}
+                    {% set water_budget_value = total_supply - total_demand %}
+                    <td class="text-start fw-bold">
+                        {% if water_budget_value < 0 %}
+                        Water is Deficient in Block, Please take necessary actions.
+                        {% else %}
+                        Water is Surplus in Block, No action is required.
+                        {% endif %}</td>
+                    <td class="text-end fw-bold">
+                        {{'%0.2f'|format(water_budget_value|float)}}</td>
+                </tr>
+            </table>
+        </div>
+        <!-- <div class="container-fluid justify-content-center m-0 fs-7 mb-3">
+            <h2 class="mt-4">Inferences</h2>
+    <p><strong>Significant Water Deficit:</strong> The block faces a substantial water deficit of 14,951.49 HaM, indicating that the current water supply is insufficient to meet the demand.</p>
+    <p><strong>Over-exploitation of Groundwater:</strong> The stage of groundwater extraction is at 165.71%, categorizing the block as over-exploited. This suggests unsustainable groundwater usage, which could lead to long-term depletion.</p>
+    <p><strong>Surface Water Potential:</strong> There is a relatively small contribution from surface water sources (236.0 HaM), which highlights the need for improved surface water management and harvesting techniques.</p>
+    <p><strong>High Agricultural Demand:</strong> Crop consumption is the largest component of water demand (20,521.0 HaM), suggesting that agricultural practices need to be optimized for water efficiency.</p>
+    <p><strong>Rainfall Variability:</strong> The actual rainfall in 2023 was lower than the normal, which could have contributed to the water deficit. Effective rainwater harvesting and storage could mitigate this issue.</p>
+
+    <h2 class="mt-4">Recommendations</h2>
+    <p><strong>Enhance Water Harvesting:</strong> Increase the number and capacity of water harvesting structures to capture more surface runoff.</p>
+    <p><strong>Promote Efficient Irrigation:</strong> Implement water-efficient irrigation techniques such as drip and sprinkler systems to reduce agricultural water consumption.</p>
+    <p><strong>Groundwater Management:</strong> Develop and enforce regulations to control groundwater extraction and promote recharge practices.</p>
+    <p><strong>Rainwater Harvesting:</strong> Encourage rainwater harvesting at both community and household levels to augment water supply.</p>
+    <p><strong>Crop Diversification:</strong> Promote crops that require less water and are more suited to the local climate and water availability.</p>
+        </div> -->
+        <div class="text-center my-4">
+            <button class="btn btn-outline-dark" id="btnPrint">Print</button>
+        </div>
+    </div>
+    <div class="print d-none d-print-block">
+        <nav class="navbar navbar-expand-lg bg-transparent border-bottom p-0 border-dark">
+            <div class="container-fluid d-flex justify-content-between mb-3">
+                <img src="{{url_for('static',filename='assets/niti_logo.png')}}" alt="niti_logo" height="40px" class="ms-3">
+                <img src="{{url_for('static',filename='assets/jalagam.png')}}" alt="jalagam" height="40px" class="me-4">
+                <img src="{{url_for('static',filename='assets/giz_logo.png')}}" alt="giz_logo" height="40px">
+            </div>
+        </nav>
+    
+        <div class="text-center fw-bold fs-5 mx-1 mt-2" style="background:#dee2e6;">BASIC INFORMATION</div>
+        <div class="container-fl justify-content-center m-0 fs-7 mb-3">
+            <table class="table table-sm table-fixed-sizes">
+                <tr>
+                    <th style="width: 30% !important;">State</th>
+                    <td class="text-start">{{payload['state_name']}}</td>
+                </tr>
+                <tr>
+                    <th style="width: 30% !important;">District</th>
+                    <td class="text-start">{{payload['district_name']}}</td>
+                </tr>
+                <tr>
+                    <th style="width: 30% !important;">Block</th>
+                    <td class="text-start">{{payload['block_name']}}</td>
+                </tr>
+                <tr>
+                    <th style="width: 30% !important;">No. of Villages</th>
+                    <td class="text-start">{{village_count}}</td>
+                </tr>
+                <tr>
+                    <th>TGA</th>
+                    <td class="text-start">{{tga}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="row mb-2 mx-1">
+            <div class="col-8 mt-1 px-1">
+                <div class="text-center fw-bold fs-5 ps-2" style="background:#dee2e6;">DEMAND</div>
+                <div class="row ps-2"  style="height: 98% !important;">
+                    <div class="col-6 mt-1 px-1 " style="border-right: 1px solid lightgray;">
+                        <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">a) Human(in HaM)</div>
+                        <div class="container justify-content-center m-0 fs-7 mb-3">
+                            <table class="table table-sm table-fixed-size my-1">
+                                <tr>
+                                    <th>Description</th>
+                                    <th class="text-end">Population</th>
+                                    <th class="text-end">Consumption</th>
+                                </tr>
+                                {% for item in human_data %}
+                                <tr>
+                                    <td>{{item['category'] | title}}</td>
+                                    <td class="text-end">{{item['count']}}</td>
+                                    <td class="text-end">{{item['value']}}</td>
+                                </tr>
+                                {%endfor%}
+                                
+                                    <tr>
+                                        <td colspan="1" class="text-center fw-semibold">Total</td>
+                                        <td class="text-end fw-semibold">{{ human_data | map(attribute='count') | sum | round(0)
+                                            }}
+                                        </td>
+                                        <td class="text-end fw-semibold">{{ human_data | map(attribute='value') | sum | round(0)
+                                            }}
+                                        </td>
+                                    </tr>
+                                
+                            </table>
+                        </div>
+                        <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">b) Crops(in HaM)</div>
+                        <div class="container justify-content-center m-0 fs-7 mb-3">
+                            <table class="table table-sm table-fixed-size my-1">
+                                <tr>
+                                    <th>Crop Name</th>
+                                    <th class="text-end">Area</th>
+                                    <th class="text-end">Consumption</th>
+                                </tr>
+                                {%for item in crop_data%}
+                                <tr>
+                                    <td>{{item['category'] | title}}</td>
+                                    <td class="text-end">{{item['count']}}</td>
+                                    <td class="text-end">{{item['value']}}</td>
+                                </tr>
+                                {%endfor%}
+                                
+                                    <tr>
+                                        <td colspan="1" class="text-center fw-semibold">Total</td>
+                                        <td class="text-end fw-semibold">{{ crop_data | map(attribute='count') | sum | round(0)
+                                            }}
+                                        </td>
+                                        <td class="text-end fw-semibold">{{ crop_data | map(attribute='value') | sum | round(0)
+                                            }}
+                                        </td>
+                                    </tr>                                
+                            </table>
+                        </div>
+        
+                    </div>
+        
+                    <div class="col-6 mt-1 px-1">
+        
+                        <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">c) Livestock(in HaM)</div>
+                        <div class="container justify-content-center m-0 fs-7 mb-3">
+                            <table class="table table-sm table-fixed-size my-1">
+                                <tr>
+                                    <th>Description</th>
+                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Consumption</th>
+                                </tr>
+                                {%for item in livestock_data%}
+                                <tr>
+                                    <td>{{item['category'] | title}}</td>
+                                    <td class="text-end">{{item['count']}}</td>
+                                    <td class="text-end">{{item['value']}}</td>
+                                </tr>
+                                {%endfor%}
+                                
+                                    <tr>
+                                        <td colspan="1" class="text-center fw-semibold">Total</td>
+                                        <td class="text-end fw-semibold">{{ livestock_data | map(attribute='count') | sum |
+                                            round(0)
+                                            }}</td>
+                                        <td class="text-end fw-semibold">{{ livestock_data | map(attribute='value') | sum |
+                                            round(0)
+                                            }}</td>
+                                    </tr>
+                                
+                            </table>
+                        </div>
+                        
+                        <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">d) Industry(in HaM)</div>
+                        <div class="container justify-content-center m-0 fs-7 mb-3">
+                            {%if industry_data%}
+                            <table class="table table-sm table-fixed-size my-1">
+                                <tr>
+                                    <th>Industry Sector</th>
+                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Water Allocation</th>
+                                </tr>
+                                {%for item in industry_data%}
+                                <tr>
+                                    <td>{{item.category | title}}</td>
+                                    <td class="text-end">{{item.count}}</td>
+                                    <td class="text-end">{{'%0.2f'|format(item.value|float)}}</td>
+                                </tr>
+                                {%endfor%}
+                                <tr>
+                                    <td colspan="1" class="text-center fw-semibold">Total</td>
+                                    <td class="text-end fw-semibold">{{ industry_data | map(attribute='count') | sum |
+                                        round(0)
+                                        }}</td>
+                                    <td class="text-end fw-semibold">{{ industry_data | map(attribute='value') | sum |
+                                        round(0)
+                                        }}</td>
+                                </tr>
+                            </table>
+                            {%else%}
+                            There are no industry in this block
+                            {%endif%}
+                        </div>
+                    </div>
+                </div>
+    
+            </div>
+            <div class="col-4 mt-1 px-1" style="border-left: 1px solid lightgray;">
+                <div class="text-center fw-bold fs-5" style="background:#dee2e6;">SUPPLY</div>
+                <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">a) Surface Water(in HaM)</div>
+                <div class="container justify-content-center m-0 fs-7 mb-3">
+                    <table class="table table-sm table-fixed-size my-1">
+                        <tr>
+                            <th>Water Body</th>
+                            <th class="text-end">Count</th>
+                            <th class="text-end">Storage Capacity</th>
+                        </tr>
+                        {%for item in surface_water_data%}
+                        <tr>
+                            <td>{{item['category'] | title}}</td>
+                            <td class="text-end">{{item['count']}}</td>
+                            <td class="text-end">{{item['value']}}</td>
+                        </tr>
+                        {%endfor%}
+                        
+                            <tr>
+                                <td colspan="1" class="text-center fw-semibold">Total</td>
+                                <td class="text-end fw-semibold">{{ surface_water_data | map(attribute='count') | sum |
+                                    round(0) }}</td>
+                                <td class="text-end fw-semibold">{{ surface_water_data | map(attribute='value') | sum |
+                                    round(0) }}</td>
+                            </tr>
+                        
+                    </table>
+                </div>
+                <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">b) Groundwater(in HaM)</div>
+                <div class="container justify-content-center m-0 fs-7 mb-3">
+                    <table class="table table-sm table-fixed-size my-1">
+                        <tr>
+                            <th>Description</th>
+                            <th class="text-end">Value</th>
+                        </tr>
+                        {%for item in groundwater_data%}
+                        <tr>
+                            <td>{{item['name'] | title}}</td>
+                            <td class="text-end">{{item['value']}}</td>
+                        </tr>
+                        {%endfor%}
+                    </table>
+                </div>
+                <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">c) Runoff(in HaM)</div>
+                <div class="container justify-content-center m-0 fs-7 mb-3">
+                    <table class="table table-sm table-fixed-size my-1">
+                        <tr>
+                            <th>Catchment</th>
+                            <th class="text-end">% Runoff</th>
+                            <th class="text-end">Yield</th>
+                            <th class="text-end">Available</th>
+                        </tr>
+                        {%for item in runoff_data%}
+                        <tr>
+                            <td>{{item['catchment'] | title }}</td>
+                            <td class="text-end">{{item['runoff']}}</td>
+                            <td class="text-end">{{item['runoff_yield']}}</td>
+                            <td class="text-end">{{item['supply']}}</td>
+                        </tr>
+                        {%endfor%}
+                    </table>
+                </div>
+                <div class="fw-semibold fs-6 fw-semibold ms-1 mt-1">d) Rainfall(in mm)</div>
+                <div class="container justify-content-center m-0 fs-7 mb-3">
+                    <table class="table table-sm table-fixed-size my-1">
+                        <tr>
+                            <th>Month-Year</th>
+                            <th class="text-end">Actual</th>
+                            <th class="text-end">Normal</th>
+                        </tr>
+                        {%for item in rainfall_data%}
+                        <tr>
+                            <td>{{item['month']}}</td>
+                            <td class="text-end">{{item['actual']}}</td>
+                            <td class="text-end">{{item['normal']}}</td>
+                        </tr>
+                        {%endfor%}
+                        
+                            <tr>
+                                <td colspan="1" class="text-center fw-semibold">Total</td>
+                                <td class="text-end fw-semibold">{{ rainfall_data | map(attribute='actual') | sum |
+                                    round(0) }}</td>
+                                <td class="text-end fw-semibold">{{ rainfall_data | map(attribute='normal') | sum |
+                                    round(0) }}</td>
+                            </tr>
+                        
+                    </table>
+                </div>
+            </div>
+    
+    
+        </div>
+        <div class="text-center fw-bold fs-5 mx-3" style="background:#dee2e6;">WATER BUDGET</div>
+        <div class="container-fluid justify-content-center m-0 fs-7 mb-2 px-3">
+            <table class="table table-sm table-fixed-size my-1">
+                <tr>
+                    <th>Description</th>
+                    <th class="text-end">Value</th>
+                </tr>
+                <tr>
+                    <td colspan="2" class="text-center fw-bold">Demand</td>
+                </tr>
+                {% for row in demand_side %}
+                <tr>
+                    <td class="text-start">{{row.category | title}}</td>
+                    <td class="text-end">{{'%0.2f'|format(row.water_value|float)}}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="2" class="text-center fw-bold">Supply</td>
+                </tr>
+                {% for row in supply_side %}
+                <tr>
+                    <td class="text-start">{{row.category | title}}</td>
+                    <td class="text-end">{{'%0.2f'|format(row.water_value|float)}}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="2" class="text-center fw-bold">Budget</td>
+                </tr>
+                {% for row in water_budget %}
+                <tr>
+                    <td class="text-start">{{row.category | title}}</td>
+                    <td class="text-end">{{'%0.2f'|format(row.water_value|float)}}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    {% set total_supply = water_budget[1]['water_value'] %}
+                    {% set total_demand = water_budget[0]['water_value'] %}
+                    {% set water_budget_value = total_supply - total_demand %}
+                    <td class="text-start fw-bold">
+                        {% if water_budget_value < 0 %}
+                        Water is Deficient in Block, Please take necessary actions.
+                        {% else %}
+                        Water is Surplus in Block, No action is required.
+                        {% endif %}</td>
+                    <td class="text-end fw-bold">
+                        {{'%0.2f'|format(water_budget_value|float)}}</td>
+                </tr>
+            </table>
+        </div>
+        <!-- <div class="container-fluid justify-content-center m-0 fs-7 mb-3">
+            <h6 class="mt-4">Inferences</h6>
+    <ul>
+        <li><strong>Significant Water Deficit:</strong> The block faces a substantial water deficit of 14,951.49 HaM, indicating that the current water supply is insufficient to meet the demand.</li>
+        <li><strong>Over-exploitation of Groundwater:</strong> The stage of groundwater extraction is at 165.71%, categorizing the block as over-exploited. This suggests unsustainable groundwater usage, which could lead to long-term depletion.</li>
+        <li><strong>Surface Water Potential:</strong> There is a relatively small contribution from surface water sources (236.0 HaM), which highlights the need for improved surface water management and harvesting techniques.</li>
+        <li><strong>High Agricultural Demand:</strong> Crop consumption is the largest component of water demand (20,521.0 HaM), suggesting that agricultural practices need to be optimized for water efficiency.</li>
+        <li><strong>Rainfall Variability:</strong> The actual rainfall in 2023 was lower than the normal, which could have contributed to the water deficit. Effective rainwater harvesting and storage could mitigate this issue.</li>
+    </ul>
+
+    <h6 class="mt-4">Recommendations</h6>
+    <ul>
+        <li><strong>Enhance Water Harvesting:</strong> Increase the number and capacity of water harvesting structures to capture more surface runoff.</li>
+        <li><strong>Promote Efficient Irrigation:</strong> Implement water-efficient irrigation techniques such as drip and sprinkler systems to reduce agricultural water consumption.</li>
+        <li><strong>Groundwater Management:</strong> Develop and enforce regulations to control groundwater extraction and promote recharge practices.</li>
+        <li><strong>Rainwater Harvesting:</strong> Encourage rainwater harvesting at both community and household levels to augment water supply.</li>
+        <li><strong>Crop Diversification:</strong> Promote crops that require less water and are more suited to the local climate and water availability.</li>
+    </ul>
+</div> -->
+    </div>
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const spinner = document.getElementById('loading-spinner');
+            spinner.style.display = 'none';
+        });
+        document.getElementById("btnPrint").addEventListener("click", function () {
+            window.print();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,212 @@
+{% extends 'mobile/base.html' %} 
+{% block title %} Register {% endblock %}
+{% from 'mobile/components.html' import input_text, floating_input, select %}
+{% block content %}
+    <form action="{{url_for('auth.register')}}" method="post">
+        <div class="fs-4 fw-lighter text-center font-monospace text-primary">Register User</div>
+        <div class="mb-3">
+            {{select(id='dd_districts', dd_array=districts, label='Select District')}}
+        </div>
+        <div class="mb-3">
+            {{select(id='dd_blocks', dd_array=blocks, label='Select Block')}}
+        </div>
+        <div class="mb-3">
+            {{select(id='dd_panchayats', dd_array=panchayats, label='Select Panchayat')}}
+        </div>
+        <div class="mb-3">
+            {{floating_input(label='Username (email)', placeholder='example@email.com', input_id='username', 
+            pattern="^[a-zA-Z0-9\+_.-]+@[a-zA-Z0-9.-]+$", error_message='Username must be an email ID')}}
+        </div>
+        <div class="mb-3">
+            {{floating_input(input_id='password', label='Password', input_type='password',
+             pattern='^[a-zA-Z0-9!@#\$%\^&\*\(\)_\+=\-{}\[\]:;&quot;&#39;<>,\./?\\|]+$',
+             error_message='Password must be minimum 8 characters, must have atleast one captial character and one special character')}}
+        </div>
+        <div class="mb-3">
+            {{floating_input(input_id='confirmPassword', label='Confrim Password', input_type='password', 
+            error_message='Password must match' )}}
+        </div>
+        <div class="d-grid gap-2">
+            <input type="submit" class="btn btn-primary" id="btnSubmit" name="btnSubmit" value="Register" onclick="toggleSpinner()" disabled>
+        </div>
+        <a class="text-body-secondary link-underline link-underline-opacity-0 float-end me-2 fs-7" 
+        href="{{url_for('auth.login')}}">Login</a>
+    </form>
+<input type="hidden" id="block_url" value="{{url_for('mobile.blocks')}}">
+<input type="hidden" id="panchayat_url" value="{{url_for('mobile.panchayats')}}">
+{% endblock %}
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Fetch function to handle API calls
+        async function fetchData(url, payload) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return [];
+            }
+        }
+
+        // Utility function to populate select elements
+        function populateSelect(element, data, placeholder = 'Select an option') {
+            element.innerHTML = ''; // Clear previous options
+            const placeholderOption = createOption({'text':placeholder, 'value':''});
+            placeholderOption.disabled = true;
+            placeholderOption.selected = true;
+            element.appendChild(placeholderOption);
+
+            data.forEach(item => {
+                const option = createOption({'text':item.name, 'value':item.id});
+                element.appendChild(option);
+            });
+            if (element.hasAttribute('disabled')) {
+                element.removeAttribute('disabled');
+            }
+        }
+
+        // Create option for select element
+        function createOption(params) {
+            const option = document.createElement('option');
+            option.textContent = params.text;
+            option.value = params.value;
+            return option
+        }
+
+        // References to the select elements
+        let panchayat_url = document.getElementById('panchayat_url');
+        let block_url = document.getElementById('block_url');
+        let dd_panchayats = document.getElementById('dd_panchayats');
+        let dd_districts = document.getElementById('dd_districts');
+        let dd_blocks = document.getElementById('dd_blocks');
+    
+        // Enable dropdown state on page load
+        dd_districts.removeAttribute('disabled','disabled');
+
+        // Event listener for dd_states
+        dd_districts.addEventListener('change', async function () {
+            const district_id = this.value;
+            const url = block_url.value; // Replace with actual endpoint
+            const payload = { district_id: district_id };
+
+            const blocks = await fetchData(url, payload);
+            populateSelect(dd_blocks, blocks, 'Select Block');
+            dd_panchayats.innerHTML = ''; // Clear blocks if state changes
+            dd_panchayats.appendChild(createOption({'text': 'Select Panchayat', 'value': ''}));
+            dd_panchayats.setAttribute('disabled','disabled');
+        });
+
+        // Event listener for dd_districts
+        dd_blocks.addEventListener('change', async function () {
+            const block_id = this.value;
+            const url = panchayat_url.value; // Replace with actual endpoint
+            const payload = { block_id: block_id };
+
+            const panchayats = await fetchData(url, payload);
+            populateSelect(dd_panchayats, panchayats, 'Select Panchayat');
+        });
+        // Event listener for dd_districts
+        dd_panchayats.addEventListener('change', async function () {
+            const panchayat_id = this.value;
+            const payload = { panchayat_id: panchayat_id };
+        });
+        
+    });
+</script>
+<script>
+    const form = document.getElementsByTagName('form')[0];
+    const requiredFields = form.querySelectorAll("input[required]");
+    const selectState = document.getElementById('selectState');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const password = document.getElementById('password');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    requiredFields.forEach(function(input) {
+        input.addEventListener('input',() => {
+            const pattern = input.getAttribute('pattern');
+            const value = input.value;
+            const error = input.getAttribute('data-error');
+
+            const regexpression = new RegExp(pattern)
+            if (pattern && !regexpression.test(value)){
+                input.nextElementSibling.textContent = error;
+                error_message(input);
+            } else {
+                // Clear error message
+                success_message(input);
+            }
+        });            
+    });
+
+    confirmPassword.addEventListener('input', function(){
+            if(password.value != confirmPassword.value){
+                error_message(confirmPassword);
+                confirmPassword.nextElementSibling.textContent = 'Passwords must match';
+                toggleButton(false);
+            } else {
+                success_message(confirmPassword);
+                toggleButton(true);
+            }
+        });
+    
+        function toggleButton(enable){
+            if (enable){
+                // enable btnSubmit
+                if (btnSubmit.disabled) {
+                    btnSubmit.removeAttribute('disabled');
+                } 
+            } else {
+                // disable btnSubmit
+                if (btnSubmit.disabled) {
+                    btnSubmit.removeAttribute('disabled');
+                }
+                btnSubmit.setAttribute('disabled', 'disabled')
+            }             
+        }
+
+        function error_message(input) {
+            if (input.nextElementSibling.classList.contains('valid-feedback')) {
+                input.nextElementSibling.classList.remove('valid-feedback');
+            }
+            if (input.classList.contains('is-valid')) {
+                input.classList.add('is-valid');
+            }
+            if (!input.nextElementSibling.classList.contains('invalid-feedback')) {
+                input.nextElementSibling.classList.add('invalid-feedback');
+            }
+            if (!input.classList.contains('is-invalid')) {
+                input.classList.add('is-invalid');
+            }
+        }
+
+        function success_message(input) {
+            if (input.nextElementSibling.classList.contains('invalid-feedback')) {
+                input.nextElementSibling.classList.remove('invalid-feedback');
+            }
+            if (input.classList.contains('is-invalid')) {
+                input.classList.remove('is-invalid');
+            }
+            if (!input.nextElementSibling.classList.contains('valid-feedback')) {
+                input.nextElementSibling.classList.add('valid-feedback');
+            }
+            if (!input.classList.contains('is-valid')) {
+                input.classList.add('is-valid');
+            }
+            input.nextElementSibling.textContent = 'Looks fine!';
+        }
+
+</script>
+
+{% endblock %}

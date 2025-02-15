@@ -1,0 +1,122 @@
+{% extends 'desktop/base.html' %}
+{% block title %} Dashboard {% endblock %}
+{% from 'mobile/components.html' import chart, floating_input, table_title, input_hidden %}
+{% block content %}
+{% for i in range(0, card_data|length, 2) %}
+<div class="row d-flex mt-2">
+    {% for j in range(2) %}
+    {% if i + j < card_data|length %}
+    {% set card = card_data[i + j] %}
+    <div class="col {% if j == 0 %}justify-self-start pe-0{% else %}justify-self-end{% endif %}">
+        <div class="card shadow rounded-1 mb-1 px-2 border-primary border-bottom">
+            <div class="py-3 px-1">
+                <div class="text-start">
+                    <div class="row">
+                        <div class="col">
+                            <div class="fs-7">{{ card.title }}</div>
+                        </div>
+                        <div class="col-2 text-center p-0 pe-1 me-1">
+                            <span><i class="fa-solid {{ card.icon }}"></i></span>
+                        </div>
+                    </div>
+                    <div class="">
+                        <div class="fs-1 fw-bold">{{ card.value }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endfor %}
+<div class="card shadow rounded-1 mb-1 px-2 mt-2 d-flex align-items-center">
+    <div id="main" style="height: 38vh; width: 100%;"></div>
+</div>
+<input type="hidden" name="chartData" id="chartData" value="{{chart_data}}">
+
+{% endblock %}
+{% block scripts %}
+<script>
+
+var chartDom = document.getElementById('main');
+var myChart = echarts.init(chartDom);
+let chart_data = JSON.parse(document.getElementById('chartData').value)
+    const district_short_name = chart_data.map(item => item.district_short_name);
+    const district_name = chart_data.map(item => item.district_name);
+    const values = chart_data.map(item => item.completed);
+    const percentage = chart_data.map(item => item.percentage);
+    const color = chart_data.map(item => item.color);
+
+    chart_data = {
+    district_short_name: [...district_short_name], // Reverse the district_short_name array
+    values: [...values],         // Reverse the data array
+    percentage: [...percentage],
+    district_name: [...district_name],
+    color: [...color]
+};
+var option;
+
+option = {
+    title: {
+        text: 'Validation Progress',
+        subtext: 'Percentage of validation completed',
+        left: 'center',
+        top: '10px'
+    },
+    tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    },
+    formatter: function (params) {
+      var index = params[0].dataIndex;
+      return `
+        <div style="text-align: left;">
+          District: ${chart_data.district_name[index]}<br>
+          Completed: ${chart_data.percentage[index]}
+        </div>
+      `;
+    }
+  },
+  xAxis: {
+    type: 'value'
+  },
+  yAxis: {
+    type: 'category',
+    data: chart_data['district_short_name']
+  },
+  series: [
+    {
+      data: transformArray(chart_data['values'], chart_data['color']),
+      type: 'bar'
+    }
+  ],
+  dataZoom: [
+    {
+        type: 'slider', // Enables zooming via gestures/mouse wheel
+        yAxisIndex: 0,  // Targets the first y-axis
+        start: 0,       // Initial zoom start percentage
+        end: 50,        // Initial zoom end percentage
+        right: 0
+    }
+]
+};
+
+option && myChart.setOption(option);
+
+function transformArray(input_array, color) {
+    let output_array = [];
+    input_array.forEach((value, idx) => {
+        object = {
+        value: value,
+        itemStyle: {
+            color: color[idx]
+        }
+        }
+        output_array.push(object);
+    });
+    return output_array;
+    }
+</script>
+{% endblock %}

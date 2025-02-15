@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jalagam</title>
+    <style>
+        *, *:before, *:after {
+  box-sizing: border-box;
+  transition: color 500ms linear, background-color 500ms linear, fill 500ms linear;
+}
+
+html, body {
+  font: 400 14px/18px "Open Sans", "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
+  -webkit-font-smoothing: antialiased;
+  background-color: #fff;
+  padding: 0;
+  margin: 0;
+}
+
+.hero {
+  height: 100vh;
+  width: 100%;
+  display: table;
+}
+.hero .centered {
+  display: table-cell;
+  height: 100vh;
+  vertical-align: middle;
+}
+
+.logo {
+  margin: auto;
+  width: 400px;
+  -webkit-animation: fadeIn 5s ease-out;
+  animation: fadeIn 5s ease-out;
+}
+.logo h1 {
+  font: 800 40px/1.3 'Biryani', sans-serif;
+  text-transform: uppercase;
+}
+.logo .cog {
+  width: 240px;
+  height: 150px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 5px;
+  float: right;
+}
+.logo .cog svg {
+  -webkit-animation: spin 30s linear infinite;
+  animation: spin 30s linear infinite;
+  position: absolute;
+  top: -90px;
+}
+.logo .boxed-text {
+  overflow: hidden;
+}
+.logo .boxed-text.boxed-first h1 {
+  transform: translateY(18px);
+  margin: 0;
+  margin-left: -7px;
+  font-size: 97px;
+  line-height: 80px;
+  -webkit-animation: ariseDeimos 10s ease-out;
+  animation: ariseDeimos 10s ease-out;
+}
+.logo .boxed-text.boxed-long {
+  background-color: #000;
+  height: 60px;
+  width: 330px;
+  margin-left: 5px;
+  display: inline-block;
+}
+.logo .boxed-text.boxed-long h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 53px;
+  margin-left: -5px;
+  transform: translateY(-6px);
+  -webkit-animation: ariseIndustries 10s ease-out;
+  animation: ariseIndustries 10s ease-out;
+}
+.logo .square {
+  background-color: #000;
+  height: 60px;
+  width: 60px;
+  display: inline-block;
+}
+
+body.negative {
+  background-color: #000;
+}
+body.negative .logo .square, body.negative .logo .boxed-long {
+  background-color: #fff;
+}
+body.negative .logo .boxed-long h1 {
+  color: #000;
+}
+body.negative .logo .boxed-first h1 {
+  color: #fff;
+}
+body.negative .logo svg path {
+  fill: #fff;
+}
+
+@-webkit-keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  20% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  20% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+@-webkit-keyframes ariseDeimos {
+  0% {
+    transform: translateY(95px);
+  }
+  50% {
+    transform: translateY(95px);
+  }
+  100% {
+    transform: translateY(18px);
+  }
+}
+@keyframes ariseDeimos {
+  0% {
+    transform: translateY(95px);
+  }
+  50% {
+    transform: translateY(95px);
+  }
+  100% {
+    transform: translateY(18px);
+  }
+}
+@-webkit-keyframes ariseIndustries {
+  0% {
+    transform: translateY(-50px);
+  }
+  50% {
+    transform: translateY(-50px);
+  }
+  100% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes ariseIndustries {
+  0% {
+    transform: translateY(-50px);
+  }
+  50% {
+    transform: translateY(-50px);
+  }
+  100% {
+    transform: translateY(-6px);
+  }
+}
+
+    </style>
+</head>
+<body>
+   
+<header class="hero">
+    <div class="centered">
+      <div class="logo">
+        <div class="boxed-text boxed-first">
+          <h1>Water</h1>
+        </div>
+        <div class="square"></div>
+        <div class="boxed-text boxed-long">
+          <h1>Budget</h1>
+        </div>
+        <div class="cog">
+          <svg x="0px" y="0px" viewBox="0 0 200 200" xml:space="preserve">
+            <path d="M6.5,88.9v20.8l15.6,3.8c1.2,7,3.4,13.6,6.3,19.9l-10.2,12.2l12.3,16.8l14.4-5.8c5,4.9,10.7,9.2,16.9,12.7l-1.1,15.5l19.8,6.4l8-12.8c3.8,0.6,7.7,0.9,11.6,0.9c3.3,0,6.6-0.2,9.8-0.6l8.1,13l19.8-6.4l-1-15c6.4-3.4,12.3-7.6,17.5-12.5l14.2,5.7l12.2-16.8l-9.7-11.6c3.1-6.3,5.2-13.2,6.5-20.3l14.8-3.8V90.2l-14.8-3.7c-1.3-7.1-3.4-13.8-6.4-20.1l10.2-12.1l-12.2-16.8l-14.6,5.9c-5-4.8-10.6-8.9-16.7-12.2l1.1-16.1l-19.8-6.4l-8.5,13.6c-3.5-0.5-7-0.7-10.6-0.7c-3.3,0-6.6,0.2-9.8,0.6L81.8,8.2l-19.8,6.4l1.1,16.1c-6,3.2-11.6,7.2-16.5,11.8l-15.3-6.2L19.1,53.3l10.3,12.3c-3,6.1-5.5,12.6-6.8,19.4L6.5,88.9z M100.2,56c24.5,0,44.4,19.9,44.4,44.4s-19.9,44.4-44.4,44.4S55.8,125,55.8,100.5S75.7,56,100.2,56z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <input type="hidden" name="urlPath" id="urlPath" value="{{url_for('mobile.index')}}">
+  </header>
+  <script>
+    (function(){
+	window.setTimeout(function(){
+		document.body.className = 'negative';
+	}, 6500);
+})();
+(function(){
+  url_path = document.getElementById('urlPath').value;
+	window.setTimeout(function(){
+		window.location = url_path;
+	}, 9000);
+})();
+  </script> 
+</body>
+</html>

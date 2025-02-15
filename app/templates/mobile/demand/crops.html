@@ -1,0 +1,154 @@
+{% extends 'mobile/base.html' %}
+{% block title %} Crops {% endblock %}
+{% from 'mobile/components.html' import chart, table_title, badge, table_head %}
+{% block content %}
+<div class="row">
+    <div class="col"></div>
+    <div class="col-8 text-center">
+        {{table_title(title='Crops Water Consumption', subtitle='')}}
+    </div>
+    <div class="col">
+        {% if is_approved %}
+        {{badge()}}
+        {% endif %}
+    </div>
+</div>
+<div id="cardCarousel" class="carousel slide">
+    <div class="carousel-inner">
+      <div class="carousel-item active">        
+        {{chart()}}
+      </div>
+      <div class="carousel-item">
+        <div class="overflow-y-scroll" style="height:30vh !important;">
+            <table class="table table-bordered  border-light table-sm fs-7 mb-0">
+                {{table_head(headings=[
+                    {'heading':'Crop','subheading':'(name)'},
+                    {'heading':'Area','subheading':'(in Ha)'},
+                    {'heading':'Consumption','subheading':'(in Ha M)'}
+                ])}}
+                
+                <tbody>
+                    {% for crop in crops %}
+                    <tr>
+                        <td class="text-start">{{crop.category | title}}</td>
+                        <td class="text-end">{{crop.count|indian_format}}</td>
+                        <td class="text-end">{{crop.value|indian_format}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="fw-semibold">
+                        <td>Total</td>
+                        <td class="text-end">{{ crops | map(attribute='count') | sum | round(0) | indian_format }}</td>
+                        <td class="text-end">{{ crops | map(attribute='value') | sum | round(0) | indian_format}}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" name="chartData" id="chartData" value="{{chart_data}}">
+{% endblock %}
+{% block scripts %}
+<script>
+    var chartDom = document.getElementById('main');
+    var myChart = echarts.init(chartDom);
+    let chart_data_with_colors = JSON.parse(document.getElementById('chartData').value)
+    const category = chart_data_with_colors.slice(0, 5).map(item => item.category.substring(0, 4));
+    const values = chart_data_with_colors.slice(0, 5).map(item => item.value);
+    // const data = values.slice(0, 5).map(item => {
+    //     return Math.round((item / Math.max(...values)) * 90 * 100) / 100; // multiplying by 90 and rounding to 2 decimal places
+    // });
+    const data = values.slice(0, 5).map(item => {
+        return Math.round((item / Math.max(...values)) * 90 * 100) / 100; // multiplying by 90 and rounding to 2 decimal places
+    });
+    const colors = chart_data_with_colors.slice(0,5).map(item=>item.background)
+    chart_data = {
+    category: [...category].reverse() // Reverse the category array
+        .map(cat => 
+            cat
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+            ), 
+    data: [...data].reverse(),
+    colors: [...colors].reverse()         // Reverse the data array
+};
+    var option;
+
+    option = {
+        // Global palette:
+        color: chart_data['colors'],
+        //  [
+        //     '#c23531',
+        //     '#2f4554',
+        //     '#61a0a8',
+        //     '#d48265',
+        //     '#91c7ae',
+        //     '#749f83',
+        //     '#ca8622',
+        //     '#bda29a',
+        //     '#6e7074',
+        //     '#546570',
+        //     '#c4ccd3'
+        // ],
+        title: [
+            {
+            text: 'Major Crops (in %)',
+            bottom: '0%',
+            left:'center',
+            textStyle:{
+                fontSize:14,
+            }
+            }
+        ],
+        polar: {
+            radius: [20, '70%']
+        },
+        angleAxis: {
+            max: 100,
+            startAngle: 90,
+            axisLabel:{
+                fontSize:9,
+                },
+        },
+        radiusAxis: {
+            type: 'category',
+            show: false,
+            data: chart_data['category'],
+        },
+        tooltip: {},
+        series: {
+            type: 'bar',
+            data: transformArray(chart_data['data'],
+            chart_data['colors'] 
+    ),
+            coordinateSystem: 'polar',
+            label: {
+                show: true,
+                position: 'start',
+                formatter: '{b}',
+                fontSize: 8
+                }
+        }
+    };
+
+option && myChart.setOption(option);
+
+function transformArray(input_array, color) {
+    let output_array = [];
+    input_array.forEach((value, idx) => {
+        object = {
+        value: value,
+        itemStyle: {
+            color: color[idx]
+        }
+        }
+        output_array.push(object);
+    });
+    return output_array;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'mobile/base.html' %}
+{% block title %} Livestock {% endblock %}
+{% from 'mobile/components.html' import chart, table_title, badge, table_head %}
+{% block content %}
+<div class="row">
+    <div class="col"></div>
+    <div class="col-8 text-center">
+        {{table_title(title='Livestocks Water Consumption', subtitle='')}}
+    </div>
+    <div class="col">
+        {% if is_approved %}
+        {{badge()}}
+        {% endif %}
+    </div>
+</div>
+<div id="cardCarousel" class="carousel slide">
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        {%if not livestocks%}
+        <div class="alert alert-warning mt-2" role="alert">
+            No data available for this Village
+        </div>
+        {%endif%}
+        {{chart()}}
+      </div>
+      <div class="carousel-item">
+        {%if not livestocks%}
+        <div class="alert alert-warning mt-2" role="alert">
+            No data available for this Village
+        </div>
+        {%else%}
+        <table class="table table-bordered  border-light table-sm fs-7 mb-0">
+            {{table_head(headings=[
+                {'heading':'Livestock','subheading':'(name)'},
+                {'heading':'Count','subheading':'(in numbers)'},
+                {'heading':'Consumption','subheading':'(in Ha M)'},
+                ])}}
+            <tbody>
+                {% for item in livestocks %}
+                <tr>
+                    <td class="text-start">{{item.category | title}}</td>
+                    <td class="text-end">{{item.count | indian_format }}</td>
+                    <td class="text-end">{{item.value | indian_format}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="fw-semibold">
+                    <td>Total</td>
+                    <td class="text-end">{{ livestocks | map(attribute='count') | sum | round(0)| indian_format }}</td>
+                    <td class="text-end">{{ livestocks | map(attribute='value') | sum | round(0)| indian_format }}</td>
+                </tr>
+            </tfoot>
+        </table>
+        {%endif%}
+        
+      </div>
+    </div>
+  </div>
+  <input type="hidden" name="chartData" id="chartData" value="{{chart_data}}">
+{% endblock %}
+{% block scripts %}
+<script>
+    var chartDom = document.getElementById('main');
+    var myChart = echarts.init(chartDom);
+    let chart_data = JSON.parse(document.getElementById('chartData').value)
+    var option;
+
+    // This example requires ECharts v5.5.0 or later
+    option = {
+        color:['#973EFA','#FA3ECE','#D540FA','#5A3EFA','#FA3E5E','#E592FA','#EB78C7','#B492FF'],
+        title: {
+            text: 'Consumption (in Ha M)',
+            top: 'bottom',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'item'
+        },
+        legend: {
+            orient: 'horizontal',
+            top: '5%',
+            left: 'right',
+            show: true
+        },
+        textStyle: {
+            fontSize: 10,
+        },
+        series: [
+            {
+            name: 'Access From',
+            type: 'pie',
+            radius: ['70%', '100%'],
+            center: ['50%', '70%'],
+            label: {
+                show: false,
+            },
+            // adjust the start and end angle
+            startAngle: 180,
+            endAngle: 360,
+            data: renameKey(chart_data)
+        }
+        ]
+    };
+
+    option && myChart.setOption(option);
+
+    function renameKey(data) {
+        return data.map(item => {
+            // Use object destructuring to rename the key
+            const { category, ...rest } = item; // Extract 'category' and the remaining keys
+            // Convert 'category' to title case
+            const titleCase = category
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+            return { name: titleCase, ...rest }; // Return a new object with 'name' instead of 'category'
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends 'mobile/base.html' %}
+{% block title %} Rainfall {% endblock %}
+{% from 'mobile/components.html' import chart, badge, table_title, table_head %}
+{% block content %}
+<div class="row">
+  <div class="col"></div>
+  <div class="col-8 text-center">
+      {{table_title(title='Rainfall Data', subtitle='(in mm)')}}
+  </div>
+  <div class="col">
+      {% if is_approved %}
+      {{badge()}}
+      {% endif %}
+  </div>
+</div>
+<div id="cardCarousel" class="carousel slide">
+    <div class="carousel-inner">
+      <div class="carousel-item active">    
+        {%if not monthwise_rainfall%}
+        <div class="alert alert-warning mt-2" role="alert">
+            No data available for this Village
+        </div>
+        {%endif%}    
+        {{chart()}}
+      </div>
+      <div class="carousel-item">
+        <div class="overflow-y-scroll" style="height:30vh !important;">
+        {%if not monthwise_rainfall%}
+        <div class="alert alert-warning mt-2" role="alert">
+            No data available for this Village
+        </div>
+        {%else%}
+          <table class="table table-bordered  border-light table-sm fs-7 mb-0">
+            {{table_head(headings=[
+              {'heading':'Observation Month', 'subheading':'(in Mon-YY)'},
+              {'heading':'Normal', 'subheading':'(30 Yrs Average)'},
+              {'heading':'Actual', 'subheading':'(Current Year)'}
+              ])}}
+              <!-- <thead class="text-center bg-secondary text-primary">
+                  <tr>
+                      <th>Observation Month</th>
+                      <th>Normal</th>
+                      <th>Actual</th>
+                  </tr>
+              </thead> -->
+              <tbody>
+                  {% for rainfall in monthwise_rainfall %}
+                  <tr>
+                      <td class="text-start">{{rainfall.month}}</td>
+                      <td class="text-end">{{rainfall.normal}}</td>
+                      <td class="text-end">{{rainfall.actual}}</td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr class="fw-bold">
+                    <td>Total Rainfall</td>
+                    <td class="text-end">{{ monthwise_rainfall | map(attribute='normal') | sum | indian_format }}</td>
+                    <td class="text-end">{{ monthwise_rainfall | map(attribute='actual') | sum | indian_format }}</td>
+                </tr>
+            </tfoot>
+          </table>
+          {%endif%}
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" name="chartData" id="chartData" value="{{chart_data}}">
+
+{% endblock %}
+{% block scripts %}
+<script>
+    let chart_data = JSON.parse(document.getElementById('chartData').value);
+    const months = chart_data.map(item => item.month);
+    const actuals = chart_data.map(item => item.actual);
+    const normals = chart_data.map(item => item.normal);
+    var chartDom = document.getElementById('main');
+    var myChart = echarts.init(chartDom);
+    var option;
+    actual_max = Math.max(...actuals)
+    normal_max = Math.max(...normals)
+    y_axis_max = Math.ceil(Math.max(actual_max, normal_max)/100)*100
+    console.log(y_axis_max);
+    option = {
+      legend: {
+        right: 'center',
+        top: 'top'
+      },
+      title:{
+        text: "Annual Rainfall - Actual vs Normal",
+        top:'bottom',
+        left: 'center',
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'cross',
+          crossStyle: {
+            color: '#999'
+          }
+        }
+      },
+      toolbox: {
+        feature: {
+          dataView: { show: false, readOnly: false },
+          magicType: { show: false, type: ['line', 'line'] },
+          restore: { show: false },
+          saveAsImage: { show: false }
+        }
+      },
+      // legend: {
+      //   show: false,
+      //   data: ['Month', 'Rainfall']
+      // },
+      xAxis: [
+        {
+          type: 'category',
+          data: months,
+          axisPointer: {
+            type: 'shadow'
+          },
+          axisLabel: {
+            fontSize: 8
+          }
+        }
+      ],
+      yAxis: [
+        {
+          type: 'value',
+          color: '#f00',
+          name: 'Actual (in mm)',
+          show: true,
+          min: 0,
+          max: y_axis_max,
+          interval: 50,
+          itemStyle: {
+            color: '#f00'
+          },
+          axisLabel: {
+            formatter: '{value}'
+          }
+        },
+        {
+          type: 'value',
+          name: 'Normal (in mm)',
+          show: false,
+          min: 0,
+          max: y_axis_max,
+          interval: 25,
+          axisLabel: {
+            formatter: '{value}'
+          }
+        }
+      ],
+      series: [
+        {
+          name: 'Normal',
+          type: 'line',
+          lineStyle: {
+            normal: {
+              color: '#7f00ff',
+              width: 2,
+              type: 'solid'
+            }
+          },
+          smooth: true,
+          tooltip: {
+            valueFormatter: function (value) {
+              return value + ' mm';
+            }
+          },
+          data: normals,
+        },
+        {
+          name: 'Actual',
+          type: 'line',
+          lineStyle: {
+            normal: {
+              color: '#f00',
+              width: 2,
+              type: 'solid'
+            }
+          },
+          itemStyle: {
+            normal: {
+              color: '#f00',
+              width: 2,
+              type: 'solid'
+            }
+          },
+          smooth: true,
+          yAxisIndex: 1,
+          tooltip: {
+            valueFormatter: function (value) {
+              return value + ' mm';
+            }
+          },
+          data: actuals,
+        }
+      ]
+    };
+
+
+    option && myChart.setOption(option);
+</script>
+{% endblock %}

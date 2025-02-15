@@ -1,0 +1,138 @@
+{% extends 'mobile/base.html' %}
+{% block title %} Industry {% endblock %}
+{% from 'mobile/components.html' import table_title, chart, badge, table_head %}
+{% block content %}
+<div class="row">
+    <div class="col"></div>
+    <div class="col-8 text-center">
+        {% if industries %}
+        {{table_title(title='Industry Demand', subtitle=subtitle)}}
+        {% else %}
+        {{table_title(title='Industry Demand', subtitle="")}}
+        {% endif %}
+    </div>
+    <div class="col">
+        {% if is_approved %}
+        {{badge()}}
+        {% endif %}
+    </div>
+</div>
+<div id="cardCarousel" class="carousel slide">
+    <div class="carousel-inner">
+      <div class="carousel-item active"> 
+        {% if industries %}       
+        {{chart()}}
+        {% else %}
+        <div class="alert alert-warning mt-2" role="alert">
+            NIL Industry demand reported by the block
+        </div>
+        <!-- <span class="fs-7 fw-lighter d-flex justify-content-center align-items-center" style="height: 100px;">
+        </span> -->
+        {% endif %}
+      </div>
+      <div class="carousel-item">
+        <div class="overflow-y-scroll" style="height:30vh !important;">
+            {% if industries %}
+            <table class="table table-bordered border-light  border-light table-sm fs-7 mb-0">
+                    {{table_head(headings=[{'heading':'Industry Sector','subheading':'(group)'},
+                    {'heading':'Count','subheading':'(in numbers)'},
+                    {'heading':'Consumption','subheading':'(in Ha M)'}
+                ])}}
+                <tbody>
+                    {% for industry in industries %}
+                    <tr>
+                        <td class="text-start">{{industry.category | title}}</td>
+                        <td class="text-center">{{industry.count}}</td>
+                        <td class="text-end">{{'%0.2f'|format(industry.value|float)}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="fw-semibold">
+                        <td >Total</td>
+                        <td class="text-end">{{ crops | map(attribute='count') | sum | round(0) }}</td>
+                        <td class="text-end">{{ crops | map(attribute='value') | sum | round(0) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            {% else %}
+            <div class="alert alert-warning mt-2" role="alert">
+                NIL Industry demand reported by the block
+            </div>
+            {% endif %}            
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" name="chartData" id="chartData" value="{{chart_data}}">
+{% endblock %}
+{% block scripts %}
+<script>
+    // echart
+    let chart_data = JSON.parse(document.getElementById('chartData').value);
+    var chartDom = document.getElementById('main');
+    // var chartDom = document.getElementById('main');
+    if (chartDom){
+        myChart = echarts.init(chartDom);
+    }
+    var option;
+
+    option = {
+    title: {
+    //    text: 'Industry Demand',
+    //    top: 'bottom',
+    //    left:'center'
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+        type: 'shadow'
+        }
+    },
+    // legend: {
+    //     orient: 'horizontal',
+    //     right: 10,
+    //     top: 'upper'
+    // },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    xAxis: {
+        type: 'value',
+        boundaryGap: [0, 0.01]
+    },
+    yAxis: {
+        type: 'category',
+        data: ['' ]
+    },
+    series: transformData(chart_data.slice(0,5))
+    };
+
+    function transformData(input_array){
+        let output_array=[];
+        input_array.forEach((element,idx) => {
+            show_label = element['value'] > 0;
+                object = {
+                    name: element['category'],
+                    type: 'bar',
+                    data: [element['value']],
+                    color: [element['background']],
+                    label:{
+                        show: show_label,
+                        verticalAlign:'middle',
+                        formatter:'{a}'
+                    }
+                }
+                output_array.push(object); 
+            });
+        return output_array;
+        }
+
+    if (chartDom){
+        option && myChart.setOption(option);
+    }
+</script>
+{% endblock %}

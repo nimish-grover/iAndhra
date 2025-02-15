@@ -1,0 +1,215 @@
+{% extends 'mobile/base.html' %}
+{% block title %} Runoff {% endblock %}
+{% from 'mobile/components.html' import chart, table_title, badge, table_head %}
+{% block content %}
+<div class="row">
+    <div class="col"></div>
+    <div class="col-8 text-center">
+        {{table_title(title='Potential Runoff', subtitle=' ')}}
+    </div>
+    <div class="col">
+        {% if is_approved %}
+        {{badge()}}
+        {% endif %}
+    </div>
+  </div>
+<div id="cardCarousel" class="carousel slide">
+    <div class="carousel-inner">
+      <div class="carousel-item active">        
+        {{chart()}}
+      </div>
+      <div class="carousel-item">        
+        <table class="table table-bordered  border-light table-sm fs-7 mb-0">
+            {{table_head(headings=[
+                {'heading':'Catchment','subheading':'(type)'},
+                {'heading':'Runoff','subheading':'(in %age)'},
+                {'heading':'Yield','subheading':'(in Cu M)'},
+                {'heading':'Potential','subheading':'(in Ha M)'},
+                ])}}
+            <tbody>
+                {% for row in catchments %}
+                <tr>
+                    <td class="text-start">{{row.catchment | title}}</td>
+                    <td class="text-end">{{row.runoff}}</td>
+                    <td class="text-end">{{row.runoff_yield | indian_format}}</td>
+                    <td class="text-end">{{row.supply | indian_format}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="fw-semibold">
+                    <td colspan="2">Total</td>
+                    <td class="text-end">{{ catchments | map(attribute='runoff_yield') | sum | indian_format }}</td>
+                    <td class="text-end">{{ catchments | map(attribute='supply') | sum | indian_format }}</td>
+                </tr>
+            </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" name="chartData" id="chartData" value="{{chart_data}}">
+{% endblock %}
+{% block scripts %}
+<script>
+    var chartDom = document.getElementById('main');
+    var myChart = echarts.init(chartDom);
+    let chart_data = JSON.parse(document.getElementById('chartData').value);
+    const toTitleCase = str => str.replace(/\b\w/g, char => char.toUpperCase());
+    const newArray = chart_data.map(item => ({
+        name: toTitleCase(item.catchment),
+        value: item.supply
+        }));
+    var option;
+
+    option = {
+        color:['#973EFA','#FA3ECE','#D540FA','#5A3EFA','#FA3E5E','#E592FA','#EB78C7','#B492FF'],
+    tooltip: {
+        trigger: 'item'
+    },
+    title:{
+        text:'Runoff Distribution',
+        top: 'bottom',
+        left:'center'
+    },
+    legend: {
+        show:true,
+        orient:'vertical',
+        bottom: '5%',
+        left: 'center',
+        top: 'center'
+    },
+    series: [
+        {
+        name: 'Access From',
+        type: 'pie',
+        radius: ['50%', '80%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+            borderRadius: 10,
+            borderColor: '#fff',
+            borderWidth: 2
+        },
+        label: {
+            show: false,
+            position: 'center'
+        },
+        emphasis: {
+            label: {
+            show: true,
+            fontSize: 40,
+            fontWeight: 'bold'
+            }
+        },
+        labelLine: {
+            show: false
+        },
+        data: newArray
+        }
+    ]
+    };
+// var chartDom = document.getElementById('main');
+//     let chart_data = JSON.parse(document.getElementById('chartData').value)
+//     const yields = chart_data.map(item => item.runoff_yield);
+//     var myChart = echarts.init(chartDom);
+//     var option;
+
+//     const gaugeData = [
+//     {
+//         value: get_yield_percent(0, yields),
+//         name: chart_data[0]['catchment'],
+//         title: {
+//         offsetCenter: ['-40%', '80%']
+//         },
+//         detail: {
+//         offsetCenter: ['-40%', '95%']
+//         },
+//         // actualValue: chart_data[0]['percent'],
+//     },
+//     {
+//         value: get_yield_percent(1, yields),
+//         name: chart_data[1]['catchment'],
+//         title: {
+//         offsetCenter: ['0%', '80%']
+//         },
+//         detail: {
+//         offsetCenter: ['0%', '95%']
+//         },
+//         // actualValue: chart_data[1]['percent'],
+//     },
+//     {
+//         value: get_yield_percent(2, yields),
+//         name: chart_data[2]['catchment'],
+//         title: {
+//         offsetCenter: ['40%', '80%']
+//         },
+//         detail: {
+//         offsetCenter: ['40%', '95%']
+//         },
+//         // actualValue: chart_data[2]['percent'],
+//     }
+//     ];
+//     option = {
+//     title:{
+//         text: 'Catchment Spread',
+//         top: 'bottom',
+//         left: 'center',
+//     },
+//     series: [
+//         {
+//         type: 'gauge',
+//         anchor: {
+//             show: true,
+//             showAbove: true,
+//             size: 18,
+//             itemStyle: {
+//             color: '#FAC858'
+//             }
+//         },
+//         pointer: {
+//             icon: 'path://M2.9,0.7L2.9,0.7c1.4,0,2.6,1.2,2.6,2.6v115c0,1.4-1.2,2.6-2.6,2.6l0,0c-1.4,0-2.6-1.2-2.6-2.6V3.3C0.3,1.9,1.4,0.7,2.9,0.7z',
+//             width: 8,
+//             length: '80%',
+//             offsetCenter: [0, '8%']
+//         },
+//         progress: {
+//             show: true,
+//             overlap: true,
+//             roundCap: true
+//         },
+//         axisLine: {
+//             roundCap: true
+//         },
+//         data: gaugeData,
+//         title: {
+//             fontSize: 10
+//         },
+//         detail: {
+//             width: 15,
+//             height: 10,
+//             fontSize: 9,
+//             color: '#fff',
+//             backgroundColor: 'inherit',
+//             borderRadius: 3,
+//             formatter: '{value}%'
+//         }
+//         }
+//     ]
+//     };
+
+    option && myChart.setOption(option);
+
+//     function get_yield_percent(index, yields) {
+//         // Calculate the sum of yields
+//         const sum = yields.reduce((acc, yieldValue) => acc + yieldValue, 0);
+        
+//         // Accumulate yield percentage up to the given index
+//         let cumulativeSum = 0;
+//         for (let i = 0; i <= index; i++) {
+//             cumulativeSum += yields[i];
+//         }
+        
+//         // Calculate and return the cumulative percentage
+//         return ((cumulativeSum / sum)*98).toFixed(1); // Using .toFixed(2) for two decimal places
+//     }
+</script>
+{% endblock %}

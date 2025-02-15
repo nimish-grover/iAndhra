@@ -1,0 +1,247 @@
+{% extends 'desktop/base.html' %}
+{% block title %}Ground{% endblock %}
+{% from 'mobile/components.html' import table_title, validate_button, floating_input, input_hidden, badge, validation_input %}
+{% block content %}
+<div class="row">
+    <div class="col"></div>
+    <div class="col-8">
+        {{table_title(title='Edit Groundwater Data', subtitle='(in Ha M)')}}</div>
+    <div class="col">
+        {% if is_approved %}
+        {{badge()}}
+        {% endif %}
+    </div>
+</div>
+<section>
+    <div class="overflow-y-scroll" style="height:30vh !important;">    
+        <table class="table table-bordered table-sm fs-7 mb-0">
+            <thead class="text-center">
+                <tr>
+                    <th>S.No.</th>
+                    <th>Description</th>
+                    <th>Qty</th>
+                    <th>Update</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in ground_supply %}
+                    {% if 'extraction' in item %}
+                        <td>
+                            {{ loop.index }}
+                            {{input_hidden(name='id', value=item['id'])}}
+                        </td>
+                        <td class="text-start">Extraction</td>
+                        <td class="text-end">
+                            {{ item['extraction'] }}
+                        </td>
+                        <td>
+                            <button class="btn fetch-row-data p-0 fs-7">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                        </td>
+                    {% endif %}
+                {% endfor %}                 
+            </tbody>
+        </table>
+    </div>
+    {{validate_button(is_approved=is_approved)}}
+</section>
+<section class="visually-hidden">
+    {{floating_input(label='Category', placeholder='', input_id='category', input_type='text', isdisabled='true' )}}
+    {{validation_input(label = 'Enter Groundwater Extraction', id = 'population',type='number',valid = 'Looks Good!',invalid = 'Must be a whole number',min='0')}}
+    <div class="text-end">
+        <button class="btn btn-outline-dark btn-sm me-2" id="btnBack">Back</button>
+        <button class="btn btn-dark btn-sm" id="btnUpdate">Update</button>
+    </div>    
+</section>
+<input type="hidden" name="livestock_data" id="groundwaterData" value="{{groundwater_data}}">
+<input type="hidden" name="post_url" id="postUrl" value="{{url_for('desktop.ground')}}">
+{% endblock %}
+{% block scripts %}
+<script>
+
+// Elements
+const sectionTable = document.querySelector("section:first-of-type");
+const sectionInput = document.querySelector("section:last-of-type");
+const btnBack = document.getElementById("btnBack");
+const btnUpdate = document.getElementById("btnUpdate");
+const btnSubmit = document.getElementById("btn_submit");
+const chkDeclare = document.getElementById("chkDeclare");
+const categoryInput = document.getElementById("category");
+const populationInput = document.getElementById("population");
+const postUrl = document.getElementById("postUrl").value;
+
+// Livestock array
+let groundwater = JSON.parse(document.getElementById('groundwaterData').value);
+
+let currentRowId = null; // Tracks the currently edited row
+
+// On page load, set initial visibility and button states
+document.addEventListener("DOMContentLoaded", () => {
+    sectionTable.classList.remove("visually-hidden");
+    sectionInput.classList.add("visually-hidden");
+
+    // Enable/disable the checkbox and submit button based on `is_approved`
+    const isAnyNotApproved = groundwater.some(row => !row.is_approved);
+    if (chkDeclare) { chkDeclare.disabled = !isAnyNotApproved; }
+    // btnSubmit.disabled = isAnyNotApproved;
+});
+
+// Event listener for edit buttons
+document.querySelectorAll(".btn.fetch-row-data").forEach(button => {
+    button.addEventListener("click", function (event) {
+        event.preventDefault();
+        toggleSpinner();
+
+        // Get row data using hidden inputs
+        const row = this.closest("tr");
+        const rowId = parseInt(row.querySelector('input[name="id"]').value, 10);
+        const groundwaterRow = groundwater.find(h => h.id === rowId);
+
+        // Populate input fields in the form
+        currentRowId = rowId;
+        categoryInput.value = 'extraction';
+        populationInput.value = groundwaterRow.extraction;
+
+        // Switch sections
+        sectionTable.classList.add("visually-hidden");
+        sectionInput.classList.remove("visually-hidden");
+        toggleSpinner();
+    });
+});
+
+// Back button event
+btnBack.addEventListener("click", function (event) {
+    event.preventDefault();
+    toggleSpinner();
+
+    // Reset currentRowId and switch sections
+    currentRowId = null;
+    sectionInput.classList.add("visually-hidden");
+    sectionTable.classList.remove("visually-hidden");
+    toggleSpinner();
+});
+
+// Update button event
+btnUpdate.addEventListener("click", function (event) {
+    event.preventDefault();
+    toggleSpinner();
+
+    if (currentRowId !== null) {
+        // Update the groundwater array
+        const updatedCount = parseFloat(populationInput.value, 10);
+        const groundwaterRow = groundwater.find(h => h.id === currentRowId);
+
+        // Store the original value if not already stored
+        if (!groundwaterRow.hasOwnProperty("original_count")) {
+            groundwaterRow.original_count = groundwaterRow.extraction; // Store the initial count value
+        }
+
+        // Update the count in the groundwater array
+        groundwaterRow.extraction = updatedCount;
+
+        // Update the table row
+        const row = document.querySelector(`tr input[value="${currentRowId}"]`).closest("tr");
+        const cell = row.querySelector(".text-end");
+
+        // Compare the updated count with the original count and apply/remove 'text-danger'
+        if (updatedCount !== groundwaterRow.original_count) {
+            cell.textContent = updatedCount;
+            cell.classList.add("text-danger");
+        } else {
+            cell.textContent = updatedCount;
+            cell.classList.remove("text-danger");
+        }
+
+        // Reset and switch sections
+        currentRowId = null;
+        sectionInput.classList.add("visually-hidden");
+        sectionTable.classList.remove("visually-hidden");
+    }
+    toggleSpinner();
+});
+
+
+// Checkbox change event
+if (chkDeclare){
+    chkDeclare.addEventListener("change", function () {
+        btnSubmit.disabled = !this.checked;
+    });
+}
+
+// Submit button event
+btnSubmit.addEventListener("click", (event) => {
+    event.preventDefault();
+    toggleSpinner();
+
+    // Post updated groundwater array to the server
+    fetch(postUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(groundwater)
+    }).then(response => {
+        if (!response.ok) {
+            toggleSpinner();
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json(); // Parse JSON response
+    })
+    .then(data => {
+        if (data.redirect_url) {
+            window.location.href = data.redirect_url; // Redirect to the URL provided
+        } else {
+            alert("No redirect URL provided.");
+        }
+    }).catch(error => {
+        toggleSpinner();
+        console.error("Error submitting data:", error);
+        alert("An error occurred while submitting data.");
+    });
+});
+// Validation
+(() => {
+  'use strict'
+
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  const forms = document.querySelectorAll('.needs-validation')
+
+  // Loop over them and prevent submission
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      form.classList.add('was-validated')
+    }, false)
+  });
+
+  // Real-time validation
+  const inputs = document.querySelectorAll('input, select');
+
+// Attach real-time validation to all input/select fields
+inputs.forEach(input => {
+    input.addEventListener('input', () => validateField(input));
+    input.addEventListener('change', () => validateField(input));
+});
+
+function validateField(input) {
+    const validFeedback = input.parentElement.querySelector('.valid-feedback');
+    const invalidFeedback = input.parentElement.querySelector('.invalid-feedback');
+    btnUpdate.disabled = false;
+    if (input.checkValidity()) {
+        validFeedback.style.display = 'block';
+        invalidFeedback.style.display = 'none';
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+    } else {
+        validFeedback.style.display = 'none';
+        invalidFeedback.style.display = 'block';
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+    }
+}
+})()
+</script>
+{% endblock %}

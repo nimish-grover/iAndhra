@@ -1,0 +1,286 @@
+{% extends 'desktop/base.html' %}
+{% block title %} Crops {% endblock %}
+{% from 'mobile/components.html' import chart, table_title, floating_input, validate_button, input_hidden, search_input,validation_input,badge%}
+{% block content %}
+<div class="row">
+    <div class="col"></div>
+    <div class="col-8 text-center">
+        {{table_title(title='Edit Crops Data', subtitle='(in Ha M)')}}
+    </div>
+    <div class="col">
+        {% if is_approved %}
+            {{badge()}}
+        {% endif  %}
+    </div>
+</div>
+<section>
+    {{search_input(placeholder='Search Crops')}}
+    <div class="overflow-y-scroll" style="height:30vh !important;">    
+        <table class="table table-bordered table-sm fs-7 mb-0">
+            <thead class="text-center">
+                <tr>
+                    <th>S.No.</th>
+                    <th>Crop Name</th>
+                    <th>Area</th>
+                    <th>Update</th>
+                </tr>
+            </thead>
+            <tbody id="tablebody">
+                {% for row in crops %}
+                <tr>
+                    <td class="text-center">
+                        {{loop.index}}
+                        {{input_hidden(name='id', value=row['id'])}}
+                    </td>
+                    <td class="text-start">
+                        {{row['crop_name'] | title}}
+                    </td>
+                    <td class="text-end">
+                        {{row['crop_area']}}
+                    </td>
+                    <td class="text-center text-body-secondary">
+                        <button class="btn fetch-row-data p-0 fs-7">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-3">
+        {{validate_button(is_approved=is_approved)}}
+    </div>
+</section>
+<section class="visually-hidden">
+    {{floating_input(label='Crop Name', placeholder='', input_id='category', input_type='text', isdisabled='true' )}}
+    {{validation_input(label = 'Enter crop area',id = 'population',type='number',valid = 'Looks Good!',invalid = 'Must be a Number greater than 0.01',min='0')}}
+
+    <div class="text-end">
+        <button class="btn btn-outline-dark btn-sm me-2" id="btnBack">Back</button>
+        <button class="btn btn-dark btn-sm" id="btnUpdate" disabled>Update</button>
+    </div>    
+</section>
+<input type="hidden" name="crop_data" id="cropData" value="{{crops_data}}">
+<input type="hidden" name="post_url" id="postUrl" value="{{url_for('desktop.crops')}}">
+{% endblock %}
+{% block scripts %}
+<script>
+
+// Elements
+const sectionTable = document.querySelector("section:first-of-type");
+const sectionInput = document.querySelector("section:last-of-type");
+const btnBack = document.getElementById("btnBack");
+const btnUpdate = document.getElementById("btnUpdate");
+const btnSubmit = document.getElementById("btn_submit");
+const chkDeclare = document.getElementById("chkDeclare");
+const categoryInput = document.getElementById("category");
+const populationInput = document.getElementById("population");
+const postUrl = document.getElementById("postUrl").value;
+
+// Livestock array
+let crop = JSON.parse(document.getElementById('cropData').value);
+
+let currentRowId = null; // Tracks the currently edited row
+
+// On page load, set initial visibility and button states
+document.addEventListener("DOMContentLoaded", () => {
+    sectionTable.classList.remove("visually-hidden");
+    sectionInput.classList.add("visually-hidden");
+
+    // Enable/disable the checkbox and submit button based on `is_approved`
+    const isAnyNotApproved = crop.some(row => !row.is_approved);
+    if (chkDeclare) { chkDeclare.disabled = !isAnyNotApproved; }
+    // btnSubmit.disabled = isAnyNotApproved;
+});
+
+// Event listener for edit buttons
+document.querySelectorAll(".btn.fetch-row-data").forEach(button => {
+    button.addEventListener("click", function (event) {
+        event.preventDefault();
+        toggleSpinner();
+
+        // Get row data using hidden inputs
+        const row = this.closest("tr");
+        const rowId = parseFloat(row.querySelector('input[name="id"]').value, 10);
+        const cropRow = crop.find(h => h.id === rowId);
+
+        // Populate input fields in the form
+        currentRowId = rowId;
+        categoryInput.value = cropRow.crop_name;
+        populationInput.value = cropRow.crop_area;
+
+        // Switch sections
+        sectionTable.classList.add("visually-hidden");
+        sectionInput.classList.remove("visually-hidden");
+        toggleSpinner();
+    });
+});
+
+// Back button event
+btnBack.addEventListener("click", function (event) {
+    event.preventDefault();
+    toggleSpinner();
+
+    // Reset currentRowId and switch sections
+    currentRowId = null;
+    resetValidationState();
+    sectionInput.classList.add("visually-hidden");
+    sectionTable.classList.remove("visually-hidden");
+    toggleSpinner();
+});
+
+// Update button event
+btnUpdate.addEventListener("click", function (event) {
+    event.preventDefault();
+    toggleSpinner();
+
+    if (currentRowId !== null) {
+        const updatedCount = parseFloat(populationInput.value, 10);
+
+        // Find the crop row and store the original value if not already stored
+        const cropRow = crop.find(h => h.id === currentRowId);
+        if (!cropRow.hasOwnProperty("original_crop_area")) {
+            cropRow.original_crop_area = cropRow.crop_area; // Store the original value
+        }
+
+        const row = document.querySelector(`tr input[value="${currentRowId}"]`).closest("tr");
+        const cell = row.querySelector(".text-end");
+
+        // Compare the new value with the original value
+        if (updatedCount !== cropRow.original_crop_area) {
+            // Value has changed
+            cell.textContent = updatedCount;
+            cell.classList.add("text-danger");
+        } else {
+            // Value reverted to original
+            cell.textContent = updatedCount;
+            cell.classList.remove("text-danger");
+        }
+
+        // Update the crop array
+        cropRow.crop_area = updatedCount;
+
+        // Reset and switch sections
+        currentRowId = null;
+        resetValidationState();
+        sectionInput.classList.add("visually-hidden");
+        sectionTable.classList.remove("visually-hidden");
+    }
+    toggleSpinner();
+});
+
+// Checkbox change event
+if (chkDeclare){
+    chkDeclare.addEventListener("change", function () {
+        btnSubmit.disabled = !this.checked;
+    });
+}
+
+// Submit button event
+btnSubmit.addEventListener("click", (event) => {
+    event.preventDefault();
+    toggleSpinner();
+
+    // Post updated crop array to the server
+    fetch(postUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(crop)
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+            toggleSpinner();
+        }
+        return response.json(); // Parse JSON response
+    })
+    .then(data => {
+        if (data.redirect_url) {
+            window.location.href = data.redirect_url; // Redirect to the URL provided
+        } else {
+            alert("No redirect URL provided.");
+        }
+    }).catch(error => {
+        console.error("Error submitting data:", error);
+        alert("An error occurred while submitting data.");
+        toggleSpinner();
+    });
+});
+
+// Search Input
+document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#tablebody tr");
+    rows.forEach(row => {
+        const cropName = row.cells[1].textContent.toLowerCase();
+        if (cropName.includes(filter)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
+function resetValidationState() {
+    const inputs = document.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        const validFeedback = input.parentElement.querySelector('.valid-feedback');
+        const invalidFeedback = input.parentElement.querySelector('.invalid-feedback');
+        if (validFeedback) validFeedback.style.display = 'none';
+        if (invalidFeedback) invalidFeedback.style.display = 'none';
+        input.classList.remove('is-valid', 'is-invalid');
+        btnUpdate.disabled = true;
+    });
+}
+
+(() => {
+  'use strict'
+
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  const forms = document.querySelectorAll('.needs-validation')
+
+  // Loop over them and prevent submission
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      form.classList.add('was-validated')
+    }, false)
+  });
+
+  // Real-time validation
+  const inputs = document.querySelectorAll('input, select');
+
+// Attach real-time validation to all input/select fields
+inputs.forEach(input => {
+    if (input.id == 'searchInput') {
+        //do nothing
+    }else{
+        input.addEventListener('input', () => validateField(input));
+        input.addEventListener('change', () => validateField(input));
+    }
+    
+});
+
+function validateField(input) {
+    const validFeedback = input.parentElement.querySelector('.valid-feedback');
+    const invalidFeedback = input.parentElement.querySelector('.invalid-feedback');
+    btnUpdate.disabled = false;
+    if (input.checkValidity()) {
+        validFeedback.style.display = 'block';
+        invalidFeedback.style.display = 'none';
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+    } else {
+        validFeedback.style.display = 'none';
+        invalidFeedback.style.display = 'block';
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+    }
+}
+})()
+
+</script>
+{% endblock %}

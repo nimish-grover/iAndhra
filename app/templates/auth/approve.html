@@ -1,0 +1,121 @@
+{% extends 'desktop/base.html' %}
+{% block title %} Approve {% endblock %}
+{% from 'mobile/components.html' import chart, table_title, floating_input, submit_button, tooltip,
+input_hidden, floating_select, search_input,validation_input,validation_select%}
+{% block content %}
+{{table_title(title='Approve Users')}}
+{{search_input(placeholder='Search User')}}
+<div class="overflow-y-scroll" style="height:30vh !important;">
+    <table class="table table-bordered table-sm fs-7 mb-0">
+        <thead class="text-center">
+            <tr>
+                <th>District</th>
+                <th>Block</th>
+                <th>Panchayat</th>
+                <th>Username</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="tablebody">
+            {% for row in users %}
+            <tr>
+                {{input_hidden(name='id', value=row['id'])}}
+                <td class="text-center" id="userDistrict">
+                    {{tooltip(full_name=row['district_name'],name=row['district_short_name'])}}
+                </td>
+                <td class="text-center" id="userBlock">
+                    {{tooltip(full_name=row['block_name'],name=row['block_name'][:3]+'..')}}
+                </td>
+                <td class="text-center" id="userPanchayat">
+                    {{tooltip(full_name=row['panchayat_name'],name=row['panchayat_name'][:3]+'..')}}
+                </td>
+                <td class="text-start text-truncate" style="max-width: 150px;">
+                    {{row['username']}}
+                </td>
+                <td id="userStatus">                        
+                    <div class="form-check form-switch d-flex justify-content-center align-items-center">
+                        <input class="form-check-input" type="checkbox" data-id="{{ row['id'] }}" 
+                        role="switch" id="userIsActive" {% if row["isActive"] %} checked {% endif %}
+                        onchange="toggleUserStatus(this)">
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div> 
+<div class="mt-3">
+    {{submit_button()}}
+</div>
+<input type="hidden" name="user_data" id="userData" value="{{user_data}}">
+<input type="hidden" name="postUrl" id="postUrl" value="{{url_for('auth.approve')}}">
+{% endblock %}
+{% block scripts %}
+<script>
+const btnSubmit = document.getElementById('btn_submit');
+let users = JSON.parse(document.getElementById('userData').value);
+const postUrl = document.getElementById('postUrl').value;
+
+// Function to handle checkbox toggle
+function toggleUserStatus(checkbox) {
+    // Access the row ID using the data-id attribute
+    const userId = parseInt(checkbox.dataset.id, 10); // Convert to integer
+    const isChecked = checkbox.checked;
+
+    // Find the user in the users array and update the isActive property
+    const user = users.find(user => user.id === userId);
+    if (user) {
+        user.isActive = isChecked; // Update isActive
+        // console.log(`User ID: ${userId}, Updated isActive: ${isChecked}`);
+        // console.log("Updated users array:", users);
+    }
+}
+
+// Search Input
+document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#tablebody tr");
+    rows.forEach(row => {
+        const cropName = row.cells[1].textContent.toLowerCase();
+        if (cropName.includes(filter)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
+
+// Submit button event
+btnSubmit.addEventListener("click", (event) => {
+    event.preventDefault();
+    toggleSpinner();
+
+    // Post updated crop array to the server
+    fetch(postUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(users)
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+            toggleSpinner();
+        }
+        return response.json(); // Parse JSON response
+    })
+    .then(data => {
+        if (data.redirect_url) {
+            toggleSpinner();
+            window.location.href = data.redirect_url; // Redirect to the URL provided
+        } else {
+            alert("No redirect URL provided.");
+        }
+    }).catch(error => {
+        console.error("Error submitting data:", error);
+        alert("An error occurred while submitting data.");
+        toggleSpinner();
+    });
+});
+
+</script>
+{% endblock %}
+

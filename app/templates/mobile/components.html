@@ -1,0 +1,297 @@
+<!--TOGGLE BUTTON -->
+
+{% macro toggle_button(labels=[]) %}
+{% if labels %}
+<div class="d-flex aligh-items-center justify-content-center">
+	<div class="tabs">
+        {% for item in labels %}
+		<input type="radio" id="radio-{{loop.index}}"  
+        name="tabs" {% if not loop.index/2 == 1 %} checked {% endif %} />
+		<label class="tab" for="radio-{{loop.index}}">{{item | title}}</label>
+        {% endfor %}
+		<!-- <input type="radio" id="radio-2" name="tabs" />
+		<label class="tab" for="radio-2">Development</label> -->
+		<span class="glider"></span>
+	</div>
+</div>
+{% endif %}
+{% endmacro %}
+<!--Dropdown / Select -->
+{% macro select(id='', dd_array=None, label='') -%}
+<div class="mb-3">
+    <select class="form-select" aria-label="Default select example" id="{{id}}" name="{{id}}" disabled>
+        <option selected disabled>--{{label}}--</option>
+        {% for item in dd_array %}
+            <option value="{{item.id}}">{{item.name}}</option>
+        {% endfor %}
+      </select>
+</div>
+{%- endmacro %}
+
+<!-- validation input -->
+ {%macro validation_input(id='',label='',min ='',invalid ='',valid='',type='',disabled='' )%}
+<div class="form-floating my-3 position-relative">
+    <input 
+        class="form-control form-control-sm" 
+        id="{{id}}" 
+        placeholder="{{label}}" 
+        name="{{id}}" 
+        type="{{type}}" 
+        required 
+        min="{{min}}" 
+        step="any"
+        {{disabled}}>
+    <div class="validation-symbol position-absolute end-0 top-50 translate-middle-y pe-3"></div>
+    <div class="invalid-feedback text-start">
+        {{invalid}}
+    </div>
+    <div class="valid-feedback text-start visually-hidden">
+        &nbsp;
+    </div>
+    <label for="{{id}}">{{label}}</label>
+</div>
+{%endmacro%}
+
+{%macro validation_select(id='',label='',dd_array=[],valid='',invalid='')%}
+<div class="form-floating mb-3 position-relative">
+    <select 
+        class="form-select" 
+        id="{{id}}" 
+        aria-label="Floating label select example" 
+        required >
+        <option value="" disabled selected>{{label}}</option>
+        {%for row in dd_array%}
+            <option value="{{row.id}}">{{row.value}}</option>
+        {%endfor%}
+    </select>
+    <div class="validation-symbol position-absolute end-0 top-50 translate-middle-y pe-3"></div>
+    <div class="invalid-feedback text-start">
+        {{invalid}}
+    </div>
+    <div class="valid-feedback text-start visually-hidden">
+        &nbsp;
+    </div>
+    <label for="{{id}}">{{label}}</label>
+</div>
+{%endmacro%}
+
+<!-- Floating Select -->
+{% macro floating_select(option_array,label) %}
+{% if option_array | length > 0 %}         
+<div class="form-floating mb-3">
+<select class="form-select" id="floatingSelect" aria-label="Floating label select example">
+    <option selected>{{label}}</option>
+    {% for item in option_array %}
+    <option value="{{item.id}}">{{item.category}}</option>
+    {% endfor %}
+  </select>
+  <label for="floatingSelect">{{label}}</label>
+</div>
+{% endif %}
+{% endmacro %}
+<!-- PROGRESS BAR -->
+{% macro progress_bar(completed=30) %}
+<div class="progress" role="progressbar" aria-label="Warning example" aria-valuenow="75" 
+aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar text-bg-primary" style="width: {{completed}}%">{{completed}}%</div>
+  </div>
+{% endmacro %}
+
+<!-- APPROVE BUTTON -->
+
+{% macro approve_button() %}
+    <a href="{{url_for('auth.login')}}" class="btn btn-dark text-white ms-auto"
+        style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+        Validate
+    </a>
+{% endmacro %}
+
+<!-- TABLE HEADING / TITLE -->
+
+{% macro table_title(title='title', subtitle='') %}
+<h6>{{title}}</h6>
+<div class="text-body-secondary fs-7 mt-n5 mb-2">{{subtitle}}</div>
+{% endmacro %}
+
+<!-- BLOCK BUTTON (TYPE=BUTTON) -->
+
+{% macro block_button(label='', is_disabled=False) %}
+<div class="d-grid gap-2">
+    <button type="submit" class="btn btn-primary" id="btn_{{label}}"  {% if is_disabled %} disabled {% endif %}>{{label | title}}</button>
+</div>
+{% endmacro %}
+
+<!-- SUBMIT BUTTON (TYPE=Submit) -->
+
+{% macro submit_button(is_disabled=False) %}
+<div class="d-grid gap-2">
+    <input type="submit" class="btn btn-primary" value="Submit" id="btn_submit" {% if is_disabled %} disabled {% endif %}>
+</div>
+{% endmacro %}
+
+<!-- VALIDATE BUTTON (TYPE=Submit) -->
+
+{% macro validate_button(is_approved='False') %}
+<div class="d-grid gap-2">
+    <input type="submit" class="btn btn-primary" value="{%if is_approved%}Update{%else%}Validate{%endif%}" id="btn_submit">
+</div>
+{% endmacro %}
+
+<!--SEARCH INPUT GROUP -->
+
+{% macro search_input(placeholder='') %}
+<div class="input-group input-group-sm mb-3">
+    <input type="text" id="searchInput" class="form-control" placeholder="{{placeholder}}" aria-label="Recipient's username" aria-describedby="searchInput_2">
+    <span class="input-group-text" id="searchInput_2"><i class="fa-solid fa-magnifying-glass"></i></span>
+  </div>
+{% endmacro %}
+
+{%macro badge()%}
+<div class="col">
+    <div class="position-relative d-inline-block text-success" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Validated data">
+        <!-- Background Icon -->
+        <i class="fa-solid fa-certificate" style="font-size:1.65em;"></i>
+        <!-- Overlay Icon -->
+        <i class="fa-regular fa-circle-check position-absolute top-50 start-50 translate-middle text-white" style="font-size:0.8em"></i>
+    </div>        
+</div>
+{%endmacro%}
+
+<!-- INPUT HIDDEN (TYPE=HIDDEN) -->
+
+{% macro input_hidden(name, value) %}
+<input type="hidden" name="{{name}}" id="{{name}}" value="{{value}}">
+{% endmacro %}
+
+<!-- CHART -->
+
+ {% macro chart() %}
+ <div id="main" class="mx-auto" style="height: 35vh; width: 90%;"></div>
+ {% endmacro %}
+ 
+<!-- BOTTOM MENU & SCRIPT -->
+{% macro bottom_menu(menu_array=[]) %}
+    {% if not 'index' in request.path  %}
+    <nav class="bg-dark rounded-pill ms-1 me-1 mb-1">
+        <div class="d-flex justify-content-between aligh-items-center" id="bottom_menu">
+            {% for item in menu_array %} 
+            <a class="d-flex flex-column justify-content-center align-items-center flex-fill p-2 
+            {% if (item.label in request.path) %} bg-white text-dark
+            {% else %} text-white {% endif %}
+            link-underline link-underline-opacity-0 {% if loop.last %} rounded-end-5{%elif loop.first%}rounded-start-5{% endif %}" href="{{item.route}}">
+                <i class="{{item.icon}}"></i>
+                <span class="fs-8">{{item.label | title}}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </nav>
+    <script>
+    // Select all anchor tags within the #bottom_menu div
+    const anchors = document.querySelectorAll('#bottom_menu a');
+    // Add event listeners to each anchor tag
+    anchors.forEach(anchor => {
+        anchor.addEventListener('click', event => {
+            event.preventDefault(); // Prevent the default navigation behavior
+            toggleSpinner();
+            const targetURL = anchor.getAttribute('href'); // Get the href value
+            // Redirect after 1-second delay
+            setTimeout(() => {
+                    window.location.href = targetURL;
+                }, 500);
+        });
+    });
+
+    </script>
+    {% endif %}
+{% endmacro %}
+
+<!-- NORMAL INPUT (TYPE=Text) -->
+{% macro input_text(label='label', placeholder='placeholder', id='input_id', pattern='', error_message='' )%}
+    <label for="{{input_id}}" class="form-label">{{label}}</label>
+    <input type="email" class="form-control" id="{{input_id}}" name="{{input_id}}" 
+    data-error="{{error_message}}" {% if pattern !="" %} pattern="{{pattern}}" {% endif %} placeholder="{{placeholder}}" required>
+    <div class="fs-7"><!--error message--></div>
+{% endmacro %}
+
+<!--FLOATING INPUT -->
+{% macro floating_input(label, placeholder, input_id, input_type='text', pattern='', error_message='', isdisabled=False )%}
+<div class="form-floating my-3">
+    <input class="form-control form-control-sm" id="{{input_id}}" placeholder="{{label}}" data-error="{{error_message}}"
+    name="{{input_id}}" type="{{input_type}}" {% if pattern !="" %} pattern="{{pattern}}" {% endif %} required {% if isdisabled %} disabled{% endif %}>
+    <div class="fs-7 text-start"><!--error message--></div>
+    <label for="{{input_id}}">{{label}}</label>
+</div>
+{% endmacro %}
+
+<!--TOOLTIP-->
+{% macro tooltip(name=" ",full_name="") %}
+<a class="text-decoration-none text-dark" data-bs-toggle="tooltip" data-bs-html="true" 
+data-bs-title="{%if full_name%} {{full_name}} {%else%} {{name}} {%endif%}">
+    {{name}}
+</a>
+{% endmacro %}
+
+<!--TABLE HEAD -->
+{% macro table_head(headings=[]) %}
+<thead class="text-center bg-secondary text-primary">
+    <tr>
+        {% for th in headings %}
+        <th class="bg-light text-dark">
+            <div class="fw-semibold">{{th.heading}}</div>
+            <div class="fw-lighter fs-9">{{th.subheading}}</div>
+        </th>
+        {% endfor %}
+    </tr>
+</thead>
+{% endmacro %}
+
+
+<!--MACROS IN PROGRESS-->
+<style>
+    .square-25{
+        height: 25px;
+        width: 25px;
+    }
+    .square-50{
+        height: 50px;
+        width: 50px;
+    }
+</style>
+<div class="mt-3">
+    <div class="d-flex flex-column align-items-center">
+        <!-- Circle with Icon -->
+        <div class="d-flex justify-content-center align-items-center bg-white square-25 rounded-circle">
+            <i class="fa-solid fa-person"></i>
+        </div>
+        <!-- Text Below the Circle -->
+        <div class="fs-8 fw-bold text-dark-emphasis">
+            15.90
+        </div>
+        <!-- Text Below the Number -->
+        
+        <div class="fs-8 fw-lighter text-body-secondary mt-n5">thousand</div>
+    </div>
+</div>
+
+{#<!-- {% macro select(id='', dd_array=[], label='Select') %}
+<select class="form-select m-2" aria-label="Default select example" id="{{id}}" disabled>
+    <option selected>--{{label}}--</option>
+    {% for item in dd_array %}
+    <option value="{{item['value']}}">{{item['label']}}</option>
+    {% endfor %}
+  </select>
+{% endmacro %} -->#}
+
+<!--CARD-->
+
+
+<div class="card border-primary text-center mx-2 h-50">
+    <div class="card-header bg-primary p-1">
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">Special title treatment</h5>
+      <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+    </div>
+    <div class="card-footer bg-primary p-1">
+    </div>
+  </div>

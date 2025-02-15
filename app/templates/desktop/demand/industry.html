@@ -1,0 +1,341 @@
+{% extends 'desktop/base.html' %}
+{% block title %} approved {% endblock %}
+{% from 'mobile/components.html' import chart, table_title, floating_input, validate_button, input_hidden, floating_select, search_input,validation_input,validation_select,badge%}
+{% block content %}
+<div class="row">
+    <div class="col"></div>
+    <div class="col-8 text-center">
+        {{table_title(title='Edit Industry Data', subtitle='(in Ha M)')}}
+    </div>
+    <div class="col">
+        {% if is_approved %}
+            {{badge()}}
+        {% endif %}
+    </div>    
+</div>
+<section>    
+
+    {{search_input(placeholder='Search Industry')}}
+    <div class="overflow-y-scroll" style="height:30vh !important;">
+        <table class="table table-bordered table-sm fs-7 mb-0">
+            <thead class="text-center">
+                <tr>
+                    <th>S.No.</th>
+                    <th>Industry</th>
+                    <th>Count</th>
+                    <th>Allocation</th>
+                    <th>Update</th>
+                </tr>
+            </thead>
+            <tbody id="tablebody">
+                {% for row in industries %}
+                <tr>
+                    <td class="text-center">
+                        {{loop.index}}
+                        {{input_hidden(name='id', value=loop.index)}}
+                    </td>
+                    <td class="text-start">
+                        {{row['industry_sector'] | title}}
+                    </td>
+                    <td class="text-end" id="industryCount">
+                        {{row['count']}}
+                    </td>
+                    <td class="text-end" id="annualAllocation">
+                        {{row['allocation']}}
+                    </td>
+                    <td class="text-center text-body-secondary">
+                        <button class="btn fetch-row-data p-0 fs-7">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div> 
+    <div class="mt-3">
+        {{validate_button(is_approved=is_approved)}}
+    </div>
+</section>
+<section class="visually-hidden">
+    {{validation_input(label = 'Industry Sector',id = 'category',type='text',valid = 'Looks Good!',invalid = 'Must be an Industry Sector',disabled='disabled')}}
+    {{validation_input(label = 'Enter Industry Count',id = 'count',type='number',valid = 'Looks Good!',invalid = 'Must be a whole number',min='0')}}
+    {{validation_input(label = 'Annual Water Allocation (in Ha M)',id = 'allocation',type='number',valid = 'Looks Good!',invalid = 'Must be a a whole number',min='0')}}
+    <div class="d-none">
+        {{validation_select(label = 'Select unit',id = 'unit',valid = 'Looks Good!',invalid = 'Please select a valid unit.',dd_array=[{'id': 1, 'value': 'Cu M'},{'id': 1, 'value': 'Ha M'},{'id': 1, 'value': 'MLD'}])}}
+    </div>
+    <div class="text-end">
+        <button class="btn btn-outline-dark btn-sm me-2" id="btnBack">Back</button>
+        <button class="btn btn-dark btn-sm" id="btnUpdate" disabled>Update</button>
+    </div>    
+</section>
+<input type="hidden" name="industry_data" id="industryData" value="{{industry_data}}">
+<input type="hidden" name="post_url" id="postUrl" value="{{url_for('desktop.industries')}}">
+{% endblock %}
+{% block scripts %}
+<script>
+
+// Elements
+const sectionTable = document.querySelector("section:first-of-type");
+const sectionInput = document.querySelector("section:last-of-type");
+const btnBack = document.getElementById("btnBack");
+const btnUpdate = document.getElementById("btnUpdate");
+const btnSubmit = document.getElementById("btn_submit");
+const chkDeclare = document.getElementById("chkDeclare");
+const categoryInput = document.getElementById("category");
+const annualAllocationInput = document.getElementById("allocation");
+const industryCountInput = document.getElementById("count");
+const industryUnitInput = document.getElementById("unit");
+const postUrl = document.getElementById("postUrl").value;
+
+// Livestock array
+let industry = JSON.parse(document.getElementById('industryData').value);
+console.log(industry);
+let currentRowId = null; // Tracks the currently edited row
+
+// On page load, set initial visibility and button states
+document.addEventListener("DOMContentLoaded", () => {
+    sectionTable.classList.remove("visually-hidden");
+    sectionInput.classList.add("visually-hidden");
+
+    // Enable/disable the checkbox and submit button based on `is_approved`
+    const isAnyNotApproved = industry.some(row => !row.is_approved);
+    if (chkDeclare) { chkDeclare.disabled = !isAnyNotApproved; }
+    // btnSubmit.disabled = isAnyNotApproved;
+});
+
+// Event listener for edit buttons
+document.querySelectorAll(".btn.fetch-row-data").forEach(button => {
+    button.addEventListener("click", function (event) {
+        event.preventDefault();
+        toggleSpinner();
+
+        // Get row data using hidden inputs
+        const row = this.closest("tr");
+        const rowId = parseInt(row.querySelector('input[name="id"]').value, 10);
+        const industryRow = industry.find(h => h.id === rowId);
+        console.log(industryRow);
+        // Populate input fields in the form
+        currentRowId = rowId;
+        categoryInput.value = industryRow.industry_sector;
+        annualAllocationInput.value = industryRow.allocation;
+        industryCountInput.value = industryRow.count;
+        Array.from(industryUnitInput.options).forEach(option => {
+            // if (industryRow.unit !== "" && option.textContent === industryRow.unit) {
+            //     option.selected = true;
+            // }
+            if (option.textContent.toLowerCase() === "ha m") {
+                option.selected = true;
+            }
+        });
+
+
+        // Switch sections
+        sectionTable.classList.add("visually-hidden");
+        sectionInput.classList.remove("visually-hidden");
+        toggleSpinner();
+    });
+});
+
+// Back button event
+btnBack.addEventListener("click", function (event) {
+    event.preventDefault();
+    toggleSpinner();
+
+    // Reset currentRowId and switch sections
+    currentRowId = null;
+    resetValidationState();
+    sectionInput.classList.add("visually-hidden");
+    sectionTable.classList.remove("visually-hidden");
+    toggleSpinner();
+});
+
+// Update button event
+btnUpdate.addEventListener("click", function (event) {
+    event.preventDefault();
+    toggleSpinner();
+
+    if (currentRowId !== null) {
+        // Update the industry array
+        const updatedCount = parseInt(industryCountInput.value, 10);
+        const updatedAllocation = parseFloat(annualAllocationInput.value, 10);
+        const updatedUnit = industryUnitInput.options[industryUnitInput.selectedIndex].text; // get text from dropdown options 
+        const industryRow = industry.find(h => h.id === currentRowId);
+
+        // Store the original value if not already stored
+        if (!industryRow.hasOwnProperty("original_count")) {
+            industryRow.original_count = industryRow.count; // Store the initial count value
+        }
+        if (!industryRow.hasOwnProperty("original_unit")) {
+            industryRow.original_unit = industryRow.unit; // Store the initial unit value
+        }
+        // Store the original value if not already stored
+        if (!industryRow.hasOwnProperty("original_allocation")) {
+            industryRow.original_allocation = industryRow.allocation; // Store the initial count value
+        }
+
+        // Update the count in the industry array
+        industryRow.count = updatedCount;
+        industryRow.allocation = updatedAllocation;
+        industryRow.unit = updatedUnit;
+
+        // Update the table row
+        const row = document.querySelector(`tr input[value="${currentRowId}"]`).closest("tr");
+        const countCell = row.querySelector("#industryCount");
+        const allocationCell = row.querySelector("#annualAllocation");
+
+
+        // Compare the updated count with the original count and apply/remove 'text-danger'
+        if (updatedCount !== industryRow.original_count) {
+            countCell.textContent = updatedCount;
+            countCell.classList.add("text-danger");
+        } else {
+            countCell.textContent = updatedCount;
+            countCell.classList.remove("text-danger");
+        }
+
+
+        // Compare the updated count with the original count and apply/remove 'text-danger'
+        if (updatedAllocation !== industryRow.original_allocation) {
+            allocationCell.textContent = updatedAllocation;
+            allocationCell.classList.add("text-danger");
+        } else {
+            allocationCell.textContent = updatedAllocation;
+            allocationCell.classList.remove("text-danger");
+        }
+
+        // Reset and switch sections
+
+        currentRowId = null;
+        resetValidationState();
+        sectionInput.classList.add("visually-hidden");
+        sectionTable.classList.remove("visually-hidden");
+    }
+    toggleSpinner();
+});
+
+
+// Checkbox change event
+if (chkDeclare){
+    chkDeclare.addEventListener("change", function () {
+        btnSubmit.disabled = !this.checked;
+    });
+}
+
+// Submit button event
+btnSubmit.addEventListener("click", (event) => {
+    event.preventDefault();
+    toggleSpinner();
+
+    // Post updated livestock array to the server
+    fetch(postUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(industry)
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json(); // Parse JSON response
+    })
+    .then(data => {
+        if (data.redirect_url) {
+            toggleSpinner();
+            window.location.href = data.redirect_url; // Redirect to the URL provided
+        } else {
+            alert("No redirect URL provided.");
+        }
+    }).catch(error => {
+        toggleSpinner();
+        console.error("Error submitting data:", error);
+        alert("An error occurred while submitting data.");
+    });
+});
+
+// Search Input
+document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#tablebody tr");
+    rows.forEach(row => {
+        const cropName = row.cells[1].textContent.toLowerCase();
+        if (cropName.includes(filter)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
+
+function resetValidationState() {
+    const inputs = document.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        const validFeedback = input.parentElement.querySelector('.valid-feedback');
+        const invalidFeedback = input.parentElement.querySelector('.invalid-feedback');
+        if (validFeedback) validFeedback.style.display = 'none';
+        if (invalidFeedback) invalidFeedback.style.display = 'none';
+        input.classList.remove('is-valid', 'is-invalid');
+        if (input.tagName.toLowerCase() === 'select') {
+            input.selectedIndex = 0; // Reset to the first option
+        }
+        btnUpdate.disabled = true;
+    });
+}
+// Validation
+// Example starter JavaScript for disabling form submissions if there are invalid fields
+(() => {
+  'use strict'
+
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  const forms = document.querySelectorAll('.needs-validation')
+
+  // Loop over them and prevent submission
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      form.classList.add('was-validated')
+    }, false)
+  });
+
+  // Real-time validation
+  const inputs = document.querySelectorAll('input, select');
+
+// Attach real-time validation to all input/select fields
+inputs.forEach(input => {
+    if (input.id == 'searchInput') {
+        //do nothing
+    }else{
+        input.addEventListener('input', () => validateField(input));
+        if (input.tagName=='SELECT') {
+            input.addEventListener('change', () => validateField(input));
+        }
+    }
+    
+});
+
+function validateField(input) {
+    const validFeedback = input.parentElement.querySelector('.valid-feedback');
+    const invalidFeedback = input.parentElement.querySelector('.invalid-feedback');
+    btnUpdate.disabled = false;
+    if (industryUnitInput.selectedIndex==0) btnUpdate.disabled=true;
+    if (input.checkValidity()) {
+        validFeedback.style.display = 'block';
+        invalidFeedback.style.display = 'none';
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+    } else {
+        validFeedback.style.display = 'none';
+        invalidFeedback.style.display = 'block';
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+    }
+}
+})()
+
+
+</script>
+{% endblock %}
+

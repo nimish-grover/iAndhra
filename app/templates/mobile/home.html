@@ -1,0 +1,209 @@
+{% extends 'mobile/base.html' %}
+{% block title %} Water Budget {% endblock %}
+{% from 'mobile/components.html' import chart, table_title, table_head %}
+{% block content %}
+<div id="cardCarousel" class="carousel slide">
+    <div class="carousel-inner">
+      <div class="carousel-item active">        
+        {{chart()}}
+      </div>
+      <div class="carousel-item">
+        {{table_title(title='Block Level Water Budget', subtitle='(All values are in Ha M)')}}
+        <!-- <div id="#radio-button" class="d-flex justify-content-around fs-7 fw-bold py-1">
+            <span>Human Consumption: </span>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="55" checked>
+                <label class="form-check-label" for="inlineRadio1">55 L</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="70">
+                <label class="form-check-label" for="inlineRadio2">70 L</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="130">
+                <label class="form-check-label" for="inlineRadio3">130 L</label>
+              </div>
+        </div> -->
+        <table class="table table-bordered border-light table-sm fs-8 mb-0">
+            {{table_head(headings=[
+                {'heading':'Description','subheading':''},
+                {'heading':'Value','subheading':''}])}}
+          <!-- <thead class="text-center">
+              <tr class="bg-light">
+                  <th>Description</th>
+                  <th>Value</th>
+              </tr>
+          </thead> -->
+          <tbody>
+              <tr>
+                  <td colspan="2" class="fw-bold bg-opacity-50 p-0" style="background-color: #EB78C7">Demand</td>
+              </tr>
+              {% for row in demand_side %}
+              <tr>
+                  <td class="text-start py-0">{{row.category | title}}</td>
+                  <td class="text-end py-0">{{row.water_value|indian_format}}</td>
+              </tr>
+              {% endfor %}
+              <tr>
+                  <td colspan="2" class="fw-bold bg-opacity-50 p-0" style="background-color:#B492FF">Supply</td>
+              </tr>
+              {% for row in supply_side %}
+              <tr>
+                  <td class="text-start py-0">{{row.category | title}}</td>
+                  <td class="text-end py-0">{{row.water_value|indian_format}}</td>
+              </tr>
+              {% endfor %}
+              <tr>
+                  <td colspan="2" class="fw-bold bg-opacity-50 text-center p-0" style="background-color: #E592FA">Water Budget</td>
+              </tr>
+              {% for row in water_budget %}
+              <tr>
+                  <td class="text-start py-0">{{row.category | title}}</td>
+                  <td class="text-end py-0">{{row.water_value|indian_format}}</td>
+              </tr>
+              {% endfor %}
+              <tr>
+                {% set total_supply = water_budget[1]['water_value'] %}
+                {% set total_demand = water_budget[0]['water_value'] %}
+                {% set water_budget = total_supply - total_demand %}
+                <td class="text-start py-0 text-{% if water_budget < 0 %}danger{% else %}success{% endif %}-emphasis">{% if water_budget < 0 %}Deficient{% else %}Surplus{% endif %}</td>
+                <td class="text-end py-0 text-{% if water_budget < 0 %}danger{% else %}success{% endif %}-emphasis">{{water_budget|indian_format}}</td>
+              </tr>
+          </tbody>
+      </table>
+      {% if current_user.is_authenticated %}
+      <div class="d-none d-md-block"><a href="{{url_for('mobile.print')}}" target="_blank" class="btn btn-outline-dark mx-auto btn-sm mt-3">Print</a></div>  
+      {% endif %}    
+      </div>
+    </div>
+  </div>
+  <input type="hidden" name="chartData" id="chartData" value="{{chart_data}}"> 
+{% endblock %}
+{% block scripts %}
+<script>
+// echart
+var chartDom = document.getElementById('main');
+    var myChart = echarts.init(chartDom);
+    let chart_data = JSON.parse(document.getElementById('chartData').value);
+    const chart_titles = ['Total Water Demand','Total Water Supply', 'Water Budget']
+    var option;
+    const data = chart_data;        
+    option = {
+        title:{
+            text: chart_titles[0],
+            left: 'center',
+        },
+        xAxis: {
+            type: 'category',
+            data: getCategories(data[0]),
+            axisLabel: {
+                show: true,
+                rotate: 45,
+                textStyle: {
+                fontSize: 8
+                }
+            }
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+            label: {
+                show: true,
+                position: 'inside',
+                formatter: function (params){
+                if (params.value > 0 ) {
+                    return params.value + '%'
+                } 
+                else {return ''} 
+                
+                },
+                textStyle:{
+                fontSize: 8,
+                }
+            },
+            data: transformArray(data[0]),
+            type: 'bar'
+            }
+        ]
+        };
+
+        idx = 0
+        setInterval(() => {
+        myChart.setOption({
+            title:{
+                text: chart_titles[idx],
+                left: 'center',
+            },
+            xAxis: {
+            type: 'category',
+            data: getCategories(data[idx]),
+            axisLabel: {
+                show: true,
+                rotate: 45,
+                textStyle: {
+                fontSize: 8
+                }
+            }
+            },
+            yAxis: {
+            type: 'value',
+            min: 0,
+            max: 100,
+            },
+            series: [
+            {
+                
+                label: {
+                show: true,
+                position: 'inside',
+                formatter:function (params){
+                if (params.value > 0 ) {
+                    return params.value + '%'
+                } 
+                else {return ''} 
+                
+                },
+                textStyle:{
+                fontSize: 8,
+                }
+                },
+                data: transformArray(data[idx]),
+                type: 'bar'
+            }
+            ]
+        });
+        idx=idx+1;
+        if (idx==3) { idx=0 }
+        }, 5000);
+
+
+
+        function transformArray(input_array) {
+            let output_array = [];
+            input_array.forEach((value, idx) => {
+                object = {
+                value: value['value'],
+                itemStyle: {
+                    color: value['background']
+                }
+                }
+                output_array.push(object);
+            });
+            return output_array;
+            }
+
+        function getCategories(input_array) {
+            const output_array = input_array.map(item => item.category);
+        // output_array=[];
+        // input_array.forEach((element, idx)=>{
+        //     output_array.push(element['category'])
+        // });
+        return output_array;
+        }
+
+    option && myChart.setOption(option);
+
+</script>
+{% endblock %}

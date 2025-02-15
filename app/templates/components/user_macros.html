@@ -1,0 +1,32 @@
+{% macro floating_input(id='input', label='', input_type='text') %}   
+<div class="mb-3">
+    <div class="form-floating my-3">
+        <input class="form-control form-control-sm" id="input_{{id}}" placeholder="{{label}}"
+        name="{{id}}" type="{{input_type}}">
+        <label for="floatingInput">{{label}}</label>
+    </div>
+</div>
+{% endmacro %}
+{% macro step(color='dark', count = 1 , link='home', name='home') %}
+<div class="card-body fs-8 pt-0">
+    <div class="{% if name | lower in request.path  %} text-primary {% else %} fw-lighter text-dark {% endif %}">Step {{count}}</div>
+    <a class="link-dark link-underline link-underline-opacity-0" href="{{link}}">{{name|title}}</a>
+    <hr class="m-0 mt-2 border-4 fw-lighter {% if name | lower in request.path  %} border-primary {% else %} border-dark {% endif %}">
+</div>
+{% endmacro %}
+{% macro select_unit() %}
+<select class="form-select mb-3" aria-label="Large select example" id="select_unit" name="select_unit">
+    <option selected disabled>Select Unit</option>
+    <option value="1">Cusec</option>
+    <option value="2">Cu M</option>
+    <option value="3">MLD</option>
+  </select>
+{% endmacro %}
+{% macro select(id='', label='', dd_array=[]) %}
+<select class="form-select mb-3" aria-label="Large select example" id="select_{{id}}" name="{{id}}">
+    <option selected disabled>{{label}}</option>
+    {% for item in dd_array %}
+    <option value="{{item['value']}}">{{item['name']}}</option>
+    {% endfor %}
+  </select>
+{% endmacro %}
