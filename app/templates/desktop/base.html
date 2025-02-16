@@ -151,7 +151,7 @@
                     // Disable all buttons temporarily
                     themeSwitchers.forEach(btn => btn.disabled = true);
                     
-                    fetch('/iandhra/change-theme', {
+                    fetch("{{url_for('mobile.change_theme')}}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
