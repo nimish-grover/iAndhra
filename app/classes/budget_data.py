@@ -42,6 +42,8 @@ class BudgetData:
     def get_human_consumption(cls,village_id,panchayat_id, block_id, district_id):
         entity = PopulationCensus.get_census_data_population(village_id,panchayat_id,block_id, district_id)
         bg_colors=cls.COLORS
+        if not entity:
+            return entity
         for item in entity:
             item['entity_consumption'] = round(cls.litre_to_hectare_meters((int(item['entity_value']) * cls.RURAL_CONSUMPTION * cls.DECADAL_GROWTH * cls.NUMBER_OF_DAYS * cls.WATER_LOSS)),2)
         human_consumption = cls.get_entity_consumption(entity, bg_colors)

@@ -55,7 +55,7 @@ def human():
         )
     else:
         is_approved = False
-        human = BlockData.get_dummy_crops(village_id=payload['village_id'],
+        human = BlockData.get_dummy_human(village_id=payload['village_id'],
                                             panchayat_id=payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])

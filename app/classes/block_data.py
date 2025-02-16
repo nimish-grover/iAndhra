@@ -107,11 +107,20 @@ class BlockData:
                         block_population = None
                         block_population = BlockPop.get_by_id(item['table_id']) 
                         if block_population:
-                            block_population.delete_from_db()  
+                            block_population.delete_from_db()
+        filtered_json_data = [item for item in json_data if item['count'] > 0]
+        if len(filtered_json_data) == 0:
+            block_pop = BlockPop(
+                            population_id=item['population_id'],
+                            count=item['count'],
+                            bt_id=item['bt_id'], 
+                            is_approved=True, 
+                            created_by=user_id)
+            block_pop.save_to_db()
         return True
     
     @classmethod
-    def get_dummy_human(cls, village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
+    def get_dummy_human(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
         bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         population = Population.get_all_population()
         if population:
@@ -181,6 +190,15 @@ class BlockData:
                         block_livestock = BlockLivestock.get_by_id(item['table_id']) 
                         if block_livestock:
                             block_livestock.delete_from_db()  
+        filtered_json_data = [item for item in json_data if item['count'] > 0]
+        if len(filtered_json_data) == 0:
+            block_livestock = BlockLivestock(
+                    livestock_id=item['livestock_id'],
+                    count=item['count'],
+                    bt_id=item['bt_id'],
+                    is_approved=True, 
+                    created_by=user_id)
+            block_livestock.save_to_db()
         return True
     
     @classmethod 
@@ -253,6 +271,15 @@ class BlockData:
                         block_crops = BlockCrop.get_by_id(item['table_id']) 
                         if block_crops:
                             block_crops.delete_from_db()  
+        filtered_json_data = [item for item in json_data if item['crop_area'] > 0]
+        if len(filtered_json_data) == 0:
+            block_crops = BlockCrop(
+                    crop_id=item['crop_id'],
+                    area=item['count'],
+                    bt_id=item['bt_id'],
+                    is_approved=True, 
+                    created_by=user_id)
+            block_crops.save_to_db()
         return True
 
     @classmethod
@@ -321,7 +348,7 @@ class BlockData:
                         count = 0,
                         bt_id=bt_id,
                         is_approved=True, 
-                        created_by=1)
+                        created_by=user_id)
                 block_industries.save_to_db()
                 block_progress = BlockProgress(bt_id=bt_id,
                                                 is_approved=True,
@@ -391,6 +418,17 @@ class BlockData:
                         block_surface = BlockWaterbody.get_by_id(item['table_id']) 
                         if block_surface:
                             block_surface.delete_from_db()  
+        filtered_json_data = [item for item in json_data if item['count'] > 0]
+        if len(filtered_json_data) == 0:
+            block_surface = BlockWaterbody(
+                        wb_type_id = item['wb_type_id'],
+                        count = item['count'],
+                        storage=item['storage'],
+                        bt_id=item['bt_id'],
+                        is_approved=True,
+                        created_by=user_id
+                    )
+            block_surface.save_to_db()
         return True
     
     @classmethod
@@ -450,10 +488,14 @@ class BlockData:
             if 'extraction' in item:
                 id = item['id']
                 block_ground = BlockGround.get_by_id(id)
-                block_ground.extraction = item['extraction']
-                block_ground.created_by = user_id
-                block_ground.is_approved = True
-                block_ground.update_db()
+                if block_ground:
+                    block_ground.extraction = item['extraction']
+                    block_ground.created_by = user_id
+                    block_ground.is_approved = True
+                    block_ground.update_db()
+                else:
+                    block_ground = BlockGround(extraction=item['extraction'],bt_id=item['bt_id'],is_approved=True,created_by=user_id)
+                    block_ground.save_to_db()
         return True
     
     @classmethod
@@ -515,9 +557,18 @@ class BlockData:
                     is_approved = True,
                     created_by=user_id)
             block_rainfall.save_to_db()
+        filtered_json_data = [item for item in json_data if item['actual'] > 0]
+        if len(filtered_json_data) == 0:
+            block_rainfall = BlockRainfall(
+                    normal = item['normal'],
+                    actual = item['actual'],
+                    bt_id = item['bt_id'],
+                    month_year=datetime.strptime(item['month_year'], "%b-%y").replace(day=1),
+                    is_approved = True,
+                    created_by=user_id)
+            block_rainfall.save_to_db()
+
         return True
-    
-        
     
     @classmethod
     def get_lulc_supply(cls,village_id,panchayat_id, block_id, district_id, user_id, state_id=2):
@@ -577,6 +628,15 @@ class BlockData:
                         block_lulc = BlockLULC.get_by_id(item['table_id']) 
                         if block_lulc:
                             block_lulc.delete_from_db()  
+        filtered_json_data = [item for item in json_data if item['area'] > 0]
+        if len(filtered_json_data) == 0:
+            block_lulc = BlockLULC(
+                    lulc_id=item['lulc_id'],
+                    area=item['area'],
+                    bt_id=item['bt_id'],
+                    is_approved=True, 
+                    created_by=user_id)
+            block_lulc.save_to_db()
         return True
     
     @classmethod
@@ -629,7 +689,7 @@ class BlockData:
                         block_water_transfer = BlockWaterTransfer.get_by_id(item['table_id'])
                         if block_water_transfer:
                             block_water_transfer.delete_from_db()     
-        filtered_json_data = [item for item in json_data if item['count'] > 0]
+        filtered_json_data = [item for item in json_data if item['quantity'] > 0]
         if len(filtered_json_data) == 0:
             block_water_transfer = BlockWaterTransfer(
                         transfer_quantity=0,

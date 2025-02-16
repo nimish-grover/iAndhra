@@ -199,6 +199,8 @@ def progress():
     else: 
         flash('You must be admin to view this page!')
         return redirect(url_for('auth.login'))
+    
+    
 @blp.route('/budget',methods=['POST','GET'])
 def budget():
     filtered_data = HelperClass.get_dashboard_menu()
