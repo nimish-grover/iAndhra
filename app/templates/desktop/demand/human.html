@@ -102,7 +102,7 @@ document.querySelectorAll(".btn.fetch-row-data").forEach(button => {
         const row = this.closest("tr");
         const rowId = parseInt(row.querySelector('input[name="id"]').value, 10);
         const humanRow = human.find(h => h.id === rowId);
-
+        console.log(humanRow);
         // Populate input fields in the form
         currentRowId = rowId;
         categoryInput.value = humanRow.display_name;

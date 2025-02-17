@@ -126,6 +126,7 @@ class BlockData:
         if population:
             for item in population:
                 item['bt_id'] = bt_id
+                item['id'] = item['population_id']
                 item['count'] = 0 
                 item['table_id'] = 0
             return population
@@ -439,6 +440,7 @@ class BlockData:
             for item in surface:
                 item['count'] = 0
                 item['storage'] = 0
+                item['id'] = item['wb_type_id']
                 item['bt_id'] = bt_id
                 item['table_id'] = 0
             return surface
@@ -501,7 +503,7 @@ class BlockData:
     @classmethod
     def get_dummy_groundwater(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
         bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
-        ground_supply = [{'extraction':0,'bt_id':bt_id,'table_id':0},]
+        ground_supply = [{'extraction':0,'bt_id':bt_id,'table_id':0,'id':1},]
         return ground_supply
     
     @classmethod
@@ -646,6 +648,7 @@ class BlockData:
         if lulc:
             for item in lulc:
                 item['bt_id'] = bt_id
+                item['id']=item['lulc_id']
                 item['area'] = 0
                 item['table_id'] = 0
             return lulc
