@@ -1,13 +1,13 @@
-function setCardHeight() {
-    const card = document.querySelector('#dynamicCard');
-    const screenHeight = window.innerHeight;
+// function setCardHeight() {
+//     const card = document.querySelector('#dynamicCard');
+//     const screenHeight = window.innerHeight;
 
-    // Dynamically calculate height and top position
-    const cardHeight = screenHeight * 0.65; // reduce 200px from the screen
-    card.style.height = `${cardHeight}px`; 
-    card.style.minHeight = `${cardHeight}px`;
-    // card.style.top = `calc(${cardHeight})px`; // Center vertically
-}
+//     // Dynamically calculate height and top position
+//     const cardHeight = screenHeight * 0.65; // reduce 200px from the screen
+//     card.style.height = `${cardHeight}px`; 
+//     card.style.minHeight = `${cardHeight}px`;
+//     // card.style.top = `calc(${cardHeight})px`; // Center vertically
+// }
 
 // Tooltip
 const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')

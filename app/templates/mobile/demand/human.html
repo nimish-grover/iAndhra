@@ -15,10 +15,20 @@
 </div>
 <div id="cardCarousel" class="carousel slide">
     <div class="carousel-inner">
-      <div class="carousel-item active">        
+      <div class="carousel-item active">    
+        {%if not human%}
+        <div class="alert alert-warning mt-2" role="alert">
+            No data available for this Village
+        </div>
+        {%endif%}      
         {{chart()}}
       </div>      
       <div class="carousel-item">        
+        {%if not human%}
+        <div class="alert alert-warning mt-2" role="alert">
+            No data available for this Village
+        </div>
+        {%else%}  
         <table class="table table-bordered border-light table-sm fs-7 mb-0">
             {{table_head(headings=[
                 {'heading':'Description','subheading':'(Total)'},
@@ -42,6 +52,7 @@
                 </tr>
             </tfoot>
         </table>
+        {%endif%}
       </div>
     </div>
   </div>
