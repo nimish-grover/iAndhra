@@ -406,10 +406,10 @@ def change_theme():
             'name': 'Dark Theme',
             'stylesheet': url_for('static',filename='scss/dark_theme.css')
         },
-        'orange': {
-            'name': 'Orange Theme',
-            'stylesheet': url_for('static',filename='scss/orange_theme.css')
-        },
+        # 'orange': {
+        #     'name': 'Orange Theme',
+        #     'stylesheet': url_for('static',filename='scss/orange_theme.css')
+        # },
         'pink': {
             'name': 'Pink Theme',
             'stylesheet': url_for('static',filename='scss/styles.css')

@@ -90,14 +90,14 @@
         <div class="offcanvas-body">
             <p><strong>Menu</strong></p>
             <div class="list-group list-group-flush fs-7">
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        Theme: {{ available_themes[current_theme].name }}
-                    </button>
-                    <ul class="dropdown-menu">
+                <div class="list-group-item py-2 px-0 dropdown">
+                    <a class="btn btn-transparent dropdown-toggle w-100 text-start fs-7" type="button" data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-brush px-1"></i>&nbsp;Theme: {{ available_themes[current_theme].name }}
+                    </a>
+                    <ul class="dropdown-menu w-100">
                         {% for theme_id, theme in available_themes.items() %}
                         <li>
-                            <button class="dropdown-item theme-switcher" 
+                            <button class="dropdown-item theme-switcher w-100 text-start"
                                     data-theme="{{ theme_id }}"
                                     {% if theme_id == current_theme %}disabled{% endif %}>
                                 {{ theme.name }}
@@ -106,17 +106,32 @@
                         {% endfor %}
                     </ul>
                 </div>
+            
                 {% if current_user.is_authenticated %}
                     {% if current_user.isAdmin %}
-                    <a class="list-group-item list-group-item-action py-3" href="{{url_for('auth.approve')}}"><i class="fa-solid fa-gauge"></i>&nbsp;Dashboard</a>
-                    <a class="list-group-item list-group-item-action py-3" href="{{url_for('auth.reset_password')}}"><i class="fa-solid fa-unlock-keyhole"></i>&nbsp;Reset Password</a>
+                    <a class="list-group-item list-group-item-action py-3" href="{{url_for('auth.approve')}}">
+                        <i class="fa-solid fa-gauge"></i>&nbsp;Dashboard
+                    </a>
+                    <a class="list-group-item list-group-item-action py-3" href="{{url_for('auth.reset_password')}}">
+                        <i class="fa-solid fa-unlock-keyhole"></i>&nbsp;Reset Password
+                    </a>
                     {% endif %}
-                    <a class="list-group-item list-group-item-action py-3" href="{{url_for('auth.change_password')}}"><i class="fa-solid fa-user-pen"></i>&nbsp;Change Password</a>
-                    <a href="{{url_for('mobile.home')}}" class="list-group-item list-group-item-action py-3"><i class="fa-solid fa-scale-unbalanced-flip"></i>&nbsp;Water Budget</a>
-                    <a href="{{url_for('auth.logout')}}" class="list-group-item list-group-item-action py-3"><i class="fa-solid fa-lock"></i>&nbsp;Logout</a>
+                    <a class="list-group-item list-group-item-action py-3" href="{{url_for('auth.change_password')}}">
+                        <i class="fa-solid fa-user-pen"></i>&nbsp;Change Password
+                    </a>
+                    <a href="{{url_for('mobile.home')}}" class="list-group-item list-group-item-action py-3">
+                        <i class="fa-solid fa-scale-unbalanced-flip"></i>&nbsp;Water Budget
+                    </a>
+                    <a href="{{url_for('auth.logout')}}" class="list-group-item list-group-item-action py-3">
+                        <i class="fa-solid fa-lock"></i>&nbsp;Logout
+                    </a>
                 {% else %}
-                <a href="{{url_for('auth.login')}}" class="list-group-item list-group-item-action py-3"><i class="fa-solid fa-lock-open"></i>&nbsp;Login</a>
-                <a href="{{url_for('mobile.index')}}" class="list-group-item list-group-item-action py-3"><i class="fa-solid fa-scale-unbalanced-flip"></i>&nbsp;Water Budget</a>
+                <a href="{{url_for('auth.login')}}" class="list-group-item list-group-item-action py-3">
+                    <i class="fa-solid fa-lock-open"></i>&nbsp;Login
+                </a>
+                <a href="{{url_for('mobile.index')}}" class="list-group-item list-group-item-action py-3">
+                    <i class="fa-solid fa-scale-unbalanced-flip"></i>&nbsp;Water Budget
+                </a>
                 {% endif %}
             </div>
         </div>

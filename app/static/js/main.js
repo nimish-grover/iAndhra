@@ -62,5 +62,5 @@ function toggleSpinner() {
     }
 
 // Set height on page load and resize
-window.addEventListener('load', setCardHeight);
-window.addEventListener('resize', setCardHeight);
+// window.addEventListener('load', setCardHeight);
+// window.addEventListener('resize', setCardHeight);

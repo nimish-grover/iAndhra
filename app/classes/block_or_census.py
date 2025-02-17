@@ -225,10 +225,10 @@ class BlockOrCensus:
         if industry:
             total_industry = round(sum([float(item['value']) for item in industry]), 2)
         total_demand = total_human + total_livestock + total_crop + total_industry
-        demand_side.append({'category': 'human','value':round((total_human*100)/(total_demand),0),'water_value':total_human})
-        demand_side.append({'category': 'livestock','value':round((total_livestock*100)/(total_demand),0),'water_value':total_livestock})
-        demand_side.append({'category': 'crop','value':round((total_crop*100)/(total_demand),0),'water_value':total_crop})
-        demand_side.append({'category': 'industry','value':round((total_industry*100)/(total_demand),0),'water_value':total_industry}) 
+        demand_side.append({'category': 'Human','value':round((total_human*100)/(total_demand),0),'water_value':total_human})
+        demand_side.append({'category': 'Livestock','value':round((total_livestock*100)/(total_demand),0),'water_value':total_livestock})
+        demand_side.append({'category': 'Crop','value':round((total_crop*100)/(total_demand),0),'water_value':total_crop})
+        demand_side.append({'category': 'Industry','value':round((total_industry*100)/(total_demand),0),'water_value':total_industry}) 
         bg_colors = cls.COLORS
         demand_with_colors = [{**item, 'background': bg} for item, bg in zip(demand_side, bg_colors)]       
         return demand_with_colors
@@ -266,8 +266,8 @@ class BlockOrCensus:
         total_demand = sum([item['water_value'] for item in demand_side])
         supply_side = cls.get_supply_side_data(village_id,panchayat_id,block_id, district_id, state_id)
         total_supply = sum([item['water_value'] for item in supply_side])
-        water_budget.append({'category':'demand', 'value': round((total_demand*100)/(total_demand + total_supply),0),'water_value':total_demand})
-        water_budget.append({'category':'supply', 'value': round((total_supply*100)/(total_demand + total_supply),0),'water_value':total_supply})
+        water_budget.append({'category':'Demand', 'value': round((total_demand*100)/(total_demand + total_supply),0),'water_value':total_demand})
+        water_budget.append({'category':'Supply', 'value': round((total_supply*100)/(total_demand + total_supply),0),'water_value':total_supply})
         bg_colors = cls.COLORS
         budget_with_colors = [{**item, 'background': bg} for item, bg in zip(water_budget, bg_colors)] 
         return budget_with_colors

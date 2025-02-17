@@ -30,7 +30,7 @@
                 {% endif %}
             </td>
             <td class="text-center text-body-secondary">
-                <a class="link-underline link-underline-opacity-0 link-dark" href="{{row['url']}}">
+                <a class="link-underline link-underline-opacity-0 link-dark loader" href="{{row['url']}}">
                     <i class="fa-solid fa-arrow-up-right-from-square"></i>
                 </a>
             </td>
@@ -41,5 +41,13 @@
 {% endblock %}
 {% block scripts %}
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("a.loader").forEach(function (element) {
+        element.addEventListener("click", function (event) {
+            toggleSpinner();
+        });
+    });
+});
+
 </script>
 {% endblock %}

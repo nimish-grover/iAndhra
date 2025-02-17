@@ -60,10 +60,13 @@ class HelperClass():
         # Check if value is a string
         if isinstance(value, str):
             try:
-                # Attempt to convert to float
-                value = float(value)
+                value = float(value)  # Convert to float
             except ValueError:
                 raise TypeError(f"Value must be a number or a numeric string, got '{value}'")
+        
+        # Handle negative values
+        is_negative = value < 0
+        value = abs(value)  # Work with absolute value for formatting
         
         # Round the value to 2 decimal places
         value = round(value, 2)
@@ -85,6 +88,10 @@ class HelperClass():
         # Reverse back the formatted integer part
         formatted_integer = "".join(parts)[::-1]
         
+        # Add the negative sign back if necessary
+        if is_negative:
+            formatted_integer = "-" + formatted_integer
+
         # Omit decimal part if it is 0
         if int(decimal_part) == 0:
             return formatted_integer
