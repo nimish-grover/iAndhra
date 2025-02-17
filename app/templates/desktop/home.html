@@ -39,15 +39,3 @@
     </tbody>
 </table>
 {% endblock %}
-{% block scripts %}
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll("a.loader").forEach(function (element) {
-        element.addEventListener("click", function (event) {
-            toggleSpinner();
-        });
-    });
-});
-
-</script>
-{% endblock %}
