@@ -54,8 +54,7 @@ def human():
             and any(row['is_approved'] is not None for row in human)
         )
     else:
-        is_approved = False
-        human = BlockData.get_dummy_human(village_id=payload['village_id'],
+        human,is_approved = BlockData.get_dummy_human(village_id=payload['village_id'],
                                             panchayat_id=payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
@@ -91,8 +90,7 @@ def livestocks():
             and any(row['is_approved'] is not None for row in livestocks)
         )
     else:
-        is_approved = False
-        livestocks = BlockData.get_dummy_livestock(village_id=payload['village_id'],
+        livestocks,is_approved = BlockData.get_dummy_livestock(village_id=payload['village_id'],
                                             panchayat_id=payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
@@ -128,8 +126,7 @@ def crops():
             and any(row['is_approved'] is not None for row in crops)
         )
     else:
-        is_approved = False
-        crops = BlockData.get_dummy_crops(village_id=payload['village_id'],
+        crops,is_approved = BlockData.get_dummy_crops(village_id=payload['village_id'],
                                             panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
@@ -165,8 +162,7 @@ def industries():
             and any(row['is_approved'] is not None for row in industries)
         )
     else:
-        is_approved = False
-        industries = BlockData.get_dummy_industries(village_id=payload['village_id'],
+        industries,is_approved = BlockData.get_dummy_industries(village_id=payload['village_id'],
                                             panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
@@ -201,8 +197,7 @@ def surface():
             and any(row['is_approved'] is not None for row in surface_supply)
         )
     else:
-        is_approved = False
-        surface_supply = BlockData.get_dummy_surface(village_id=payload['village_id'],
+        surface_supply,is_approved = BlockData.get_dummy_surface(village_id=payload['village_id'],
                                             panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
@@ -236,12 +231,6 @@ def rainfall():
             all(row['is_approved'] for row in rainfall if row['is_approved'] is not None) 
             and any(row['is_approved'] is not None for row in rainfall)
         )
-    else:
-        is_approved = False
-        rainfall = BlockData.get_dummy_rainfall(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
-                                            block_id=payload['block_id'], 
-                                            district_id=payload['district_id'])
         
     return render_template('desktop/supply/rainfall.html', 
                             rainfall=rainfall, 
@@ -273,8 +262,7 @@ def lulc():
             and any(row['is_approved'] is not None for row in lulc)
         )
     else:
-        is_approved = False
-        lulc = BlockData.get_dummy_lulc(village_id=payload['village_id'],
+        lulc,is_approved = BlockData.get_dummy_lulc(village_id=payload['village_id'],
                                             panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
@@ -309,8 +297,7 @@ def ground():
             and any(row['is_approved'] is not None for row in ground_supply)
         )
     else:
-        is_approved = False
-        ground_supply= BlockData.get_dummy_groundwater(village_id=payload['village_id'],
+        ground_supply,is_approved= BlockData.get_dummy_groundwater(village_id=payload['village_id'],
                                             panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])

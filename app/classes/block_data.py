@@ -110,6 +110,7 @@ class BlockData:
                             block_population.delete_from_db()
         filtered_json_data = [item for item in json_data if item['count'] > 0]
         if len(filtered_json_data) == 0:
+            
             block_pop = BlockPop(
                             population_id=item['population_id'],
                             count=item['count'],
@@ -117,11 +118,16 @@ class BlockData:
                             is_approved=True, 
                             created_by=user_id)
             block_pop.save_to_db()
+            category_id = BlockCategory.get_category_id('human')
+            block_progress = BlockProgress(bt_id=item['bt_id'],is_approved=True,category_id=category_id,value=0,table_id=item['population_id'])
+            block_progress.save_to_db()
         return True
     
     @classmethod
     def get_dummy_human(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
         bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        category_id = BlockCategory.get_category_id('human')
+        is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         population = Population.get_all_population()
         if population:
             for item in population:
@@ -129,7 +135,7 @@ class BlockData:
                 item['id'] = item['population_id']
                 item['count'] = 0 
                 item['table_id'] = 0
-            return population
+            return population,is_approved
     
     @classmethod
     def get_livestock_consumption(cls, village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
@@ -200,11 +206,16 @@ class BlockData:
                     is_approved=True, 
                     created_by=user_id)
             block_livestock.save_to_db()
+            category_id = BlockCategory.get_category_id('livestock')
+            block_progress = BlockProgress(bt_id=item['bt_id'],is_approved=True,category_id=category_id,value=0,table_id=item['livestock_id'])
+            block_progress.save_to_db()
         return True
     
     @classmethod 
     def get_dummy_livestock(cls,village_id,panchayat_id,block_id,district_id,state_id=2):
         bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        category_id = BlockCategory.get_category_id('livestock')
+        is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         livestocks = Livestock.get_all_livestocks()
         if livestocks:
             for item in livestocks:
@@ -212,7 +223,7 @@ class BlockData:
                 item['count'] = 0 
                 item['id'] = item['livestock_id']
                 item['table_id'] = 0
-            return livestocks
+            return livestocks,is_approved
 
     @classmethod
     def get_crops_consumption(cls,village_id,panchayat_id, block_id, district_id, user_id, state_id=2):
@@ -281,11 +292,16 @@ class BlockData:
                     is_approved=True, 
                     created_by=user_id)
             block_crops.save_to_db()
+            category_id = BlockCategory.get_category_id('crop')
+            block_progress = BlockProgress(bt_id=item['bt_id'],is_approved=True,category_id=category_id,value=0,table_id=item['crop_id'])
+            block_progress.save_to_db()
         return True
 
     @classmethod
     def get_dummy_crops(cls,village_id,panchayat_id,block_id,district_id,state_id=2):
         bt_id = BlockTerritory.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
+        category_id = BlockCategory.get_category_id('crop')
+        is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         crops = Crop.get_all_crops()
         if crops:
             for item in crops:
@@ -293,7 +309,7 @@ class BlockData:
                 item['table_id'] = 0
                 item['crop_area'] = 0
                 item['bt_id'] = bt_id
-            return crops
+            return crops,is_approved
     
     @classmethod
     def get_block_industries(cls, village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
@@ -430,11 +446,16 @@ class BlockData:
                         created_by=user_id
                     )
             block_surface.save_to_db()
+            category_id = BlockCategory.get_category_id('surface')
+            block_progress = BlockProgress(bt_id=item['bt_id'],is_approved=True,category_id=category_id,value=0,table_id=item['wb_type_id'])
+            block_progress.save_to_db()
         return True
     
     @classmethod
     def get_dummy_surface(cls,village_id,panchayat_id,block_id, district_id, state_id=2):
         bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        category_id = BlockCategory.get_category_id('surface')
+        is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         surface = WaterbodyType.get_all_waterbodies()
         if surface:
             for item in surface:
@@ -443,7 +464,7 @@ class BlockData:
                 item['id'] = item['wb_type_id']
                 item['bt_id'] = bt_id
                 item['table_id'] = 0
-            return surface
+            return surface,is_approved
         
         
     @classmethod
@@ -498,13 +519,18 @@ class BlockData:
                 else:
                     block_ground = BlockGround(extraction=item['extraction'],bt_id=item['bt_id'],is_approved=True,created_by=user_id)
                     block_ground.save_to_db()
+                    category_id = BlockCategory.get_category_id('groundwater')
+                    block_progress = BlockProgress(bt_id=item['bt_id'],is_approved=True,category_id=category_id,value=0,table_id=0)
+                    block_progress.save_to_db()
         return True
     
     @classmethod
     def get_dummy_groundwater(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
         bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        category_id = BlockCategory.get_category_id('groundwater')
+        is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         ground_supply = [{'extraction':0,'bt_id':bt_id,'table_id':0,'id':1},]
-        return ground_supply
+        return ground_supply,is_approved
     
     @classmethod
     def get_rainfall_data(cls,village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
@@ -569,6 +595,9 @@ class BlockData:
                     is_approved = True,
                     created_by=user_id)
             block_rainfall.save_to_db()
+            category_id = BlockCategory.get_category_id('rainfall')
+            block_progress = BlockProgress(bt_id=item['bt_id'],is_approved=True,category_id=category_id,value=0,table_id=0)
+            block_progress.save_to_db()
 
         return True
     
@@ -639,11 +668,16 @@ class BlockData:
                     is_approved=True, 
                     created_by=user_id)
             block_lulc.save_to_db()
+            category_id = BlockCategory.get_category_id('lulc')
+            block_progress = BlockProgress(bt_id=item['bt_id'],is_approved=True,category_id=category_id,value=0,table_id=item['lulc_id'])
+            block_progress.save_to_db()
         return True
     
     @classmethod
     def get_dummy_lulc(cls,village_id,panchayat_id,block_id,district_id,state_id=2):
         bt_id = BlockTerritory.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
+        category_id = BlockCategory.get_category_id('lulc')
+        is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         lulc = LULC.get_all_lulc()
         if lulc:
             for item in lulc:
@@ -651,7 +685,7 @@ class BlockData:
                 item['id']=item['lulc_id']
                 item['area'] = 0
                 item['table_id'] = 0
-            return lulc
+            return lulc,is_approved
 
     
     @classmethod

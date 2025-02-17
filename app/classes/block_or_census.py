@@ -277,7 +277,7 @@ class BlockOrCensus:
         new_array=[]
         for item in entity_array:
             entity_item =  {'id':0,'category':'', 'count':0.00,'value': 0.00, 'is_approved':False}
-            entity_item['category'] = str(item['entity_name']).lower()
+            entity_item['category'] = str(item['entity_name'])
             entity_item['count'] = round(item['entity_count'],2)
             entity_item['value'] = round(item['entity_consumption'],2)
             entity_item['id'] = item['entity_id']
