@@ -109,7 +109,7 @@
             
                 {% if current_user.is_authenticated %}
                     {% if current_user.isAdmin %}
-                    <a class="list-group-item list-group-item-action py-3" href="{{url_for('auth.approve')}}">
+                    <a class="list-group-item list-group-item-action py-3" href="{{url_for('auth.dashboard')}}">
                         <i class="fa-solid fa-gauge"></i>&nbsp;Dashboard
                     </a>
                     <a class="list-group-item list-group-item-action py-3" href="{{url_for('auth.reset_password')}}">

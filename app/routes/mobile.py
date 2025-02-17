@@ -219,7 +219,7 @@ def industry():
     else:
         source = 'The Industrial Water demand is reported nil by the block' if has_value else 'Industry demand input is awaited.'
     return render_template("mobile/demand/industry.html",
-                        subtitle = '(in Ha M)' if is_approved else 'There are no industry in this block',
+                        subtitle = '(in Ha M)' if is_approved else 'There are no industry in this Village',
                         industries = industry_demand if has_value else None, 
                         source = source,
                         is_approved = is_approved,

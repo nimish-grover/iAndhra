@@ -129,9 +129,11 @@ class HelperClass():
     
     def get_admin_menu():
         return [
+            { "route" : url_for('mobile.index'), "label":"home", "icon":"fa-solid fa-house"},
             { "route" : url_for('.dashboard'), "label":"dashboard", "icon":"fa-solid fa-gauge"},
             { "route" : url_for('.approve'), "label":"approve", "icon":"fa-solid fa-list-check"},
-            { "route" : url_for('.progress'), "label":"progress", "icon":"fa-solid fa-bars-progress"}
+            { "route" : url_for('.progress'), "label":"progress", "icon":"fa-solid fa-bars-progress"},
+            { "route" : url_for('.budget'), "label":"budget", "icon":"fa-solid fa-scale-unbalanced"}
         ]
     
     def get_breadcrumbs(payload):
