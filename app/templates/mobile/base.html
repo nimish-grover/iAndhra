@@ -77,13 +77,11 @@
         <div class="card-footer bg-light fs-9 text-primary text-start">
             <div class="d-flex align-items-center">
             <span class="me-auto">{% if source %}Source: {{source}}{% endif %}</span>            
-            {% if not is_approved %}
                 {% if 'index' in request.path or 'home' in request.path or 'auth/' in request.path%}
                 <div>&nbsp;</div>
                 {% else %}
                 {{approve_button()}}
                 {% endif %}
-            {% endif %}
             </div>
         </div>
     </div>     
@@ -93,7 +91,7 @@
         {{toggle_button(labels=toggle_labels)}}        
         {{ bottom_menu(menu_array=menu|default([])) }}
     </div>
-    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenu">
+    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenu" style="width: 60%;">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title" id="offcanvasMenuLabel"><i class="fa-solid fa-droplet"></i>&nbsp;DPR</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
