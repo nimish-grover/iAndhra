@@ -9,6 +9,12 @@ class HelperClass():
     COLORS = ['#5470c6','#91cc75','#fac858','#ee6666','#73c0de','#3ba272','#fc8452','#9a60b4']
 
     @classmethod
+    def get_version(cls):
+        with open('version.txt', 'r') as file:
+            version = file.read().strip()
+        return version
+    
+    @classmethod
     def get_dashboard_menu(cls):
         progress_data = BlockProgress.get_all_villages_status()
         chart_data = []

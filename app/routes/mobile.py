@@ -1,6 +1,6 @@
 from flask import Blueprint, json, jsonify, make_response, redirect, render_template, request, session, url_for
 from flask_login import current_user
-
+from app.classes.helper import HelperClass
 from app.classes.block_or_census import BlockOrCensus
 from app.classes.budget_data import BudgetData
 from app.models import TerritoryJoin
@@ -423,6 +423,11 @@ def change_theme():
             'stylesheet': THEMES[theme]['stylesheet']
         })
     return jsonify({'success': False}), 400
+
+@blp.route('/version')
+def version():
+    version = HelperClass.get_version()
+    return {"version": version}
 
 @blp.route('/print')
 def print():
