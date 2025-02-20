@@ -747,8 +747,7 @@ class BlockData:
     @classmethod
     def get_progress_status(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
         bt_id = cls.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
-        status = BlockTerritory.get_status_by_bt_id(bt_id)
-        query_result = status[0]  # Assuming only one result from the query
+        status = BlockProgress.get_status_by_bt_id(bt_id)
         categories = ['Human', 'Livestocks', 'Crops',  'Industry', 'Surface', 'Groundwater', 'LULC', 'Rainfall', 'Water Transfer']
         category_urls = ['human', 'livestocks', 'crops', 'industries', 'surface', 'ground', 'lulc', 'rainfall', 'transfer']
 
@@ -756,7 +755,7 @@ class BlockData:
             {
                 'id': idx + 1,
                 'category': category,
-                'status': bool(query_result[idx]),
+                'status': bool(status[idx][2]),
                 'url': url_for(f'desktop.{category_urls[idx]}')
             }
             for idx, category in enumerate(categories)
