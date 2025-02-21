@@ -130,7 +130,10 @@ class BudgetData:
         runoff_array = []
         for key,value in runoff_data[0].items():
             if not key=='rainfall_in_mm':
-                catchment_area = [item['catchment_area'] for item in lulc_data if item['catchment'] == key.lower()][0]
+                catchment_area = [item['catchment_area'] for item in lulc_data if item['catchment'] == key.lower()]
+                catchment_area = 0
+                if catchment_area:
+                    catchment_area = catchment_area[0]
                 runoff_yield = round((value/10) * rainfall_in_mm, 2)
                 catchment_yield = round(catchment_area * runoff_yield, 2)
                 item = {'catchment': key, 

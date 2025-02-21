@@ -243,20 +243,23 @@ class BlockProgress(db.Model):
         return BlockProgress.transform_data_districts(result)
 
     @classmethod
-    def get_status_by_bt_id(cls,bt_id):
+    def get_status_by_bt_id(cls, bt_id):
         query = (
             db.session.query(
-                BlockProgress.category_id,
-                BlockProgress.bt_id,
-                BlockProgress.is_approved
+                BlockCategory.id.label("category_id"),
+                func.coalesce(BlockProgress.bt_id, 0).label("bt_id"),
+                func.coalesce(BlockProgress.is_approved, False).label("is_approved")
             )
-            .filter(BlockProgress.bt_id == bt_id)
-            .distinct(BlockProgress.category_id, BlockProgress.bt_id, BlockProgress.is_approved)
-            .order_by(BlockProgress.category_id)
+            .outerjoin(BlockProgress, 
+                       (BlockProgress.category_id == BlockCategory.id) & 
+                       (BlockProgress.bt_id == bt_id))  # Applying condition in JOIN
+            .distinct(BlockCategory.id, BlockProgress.bt_id, BlockProgress.is_approved)
+            .order_by(BlockCategory.id)
         )
 
         results = query.all()
         return results
+
     
     def save_to_db(self):
         duplicate_item = self.check_duplicate(self.category_id,self.table_id,self.bt_id)
