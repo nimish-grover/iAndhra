@@ -55,6 +55,34 @@ input_hidden, submit_button, progress_bar, tooltip, search_input, validation_inp
     <input type="hidden" name="budget_data" id="budgetData" value="{{budget_data}}" >
 {% endblock %}
 {% block scripts %}
-
+<script>
+    // Search filter based on tooltip title
+    document.getElementById("searchInput").addEventListener("input", function () {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#tablebody tr");
+        
+        rows.forEach(row => {
+            // Get the anchor element in the cell that contains the tooltip
+            const anchorElement = row.cells[2].querySelector('a[data-bs-title]');
+            
+            // Check if anchor element exists and has the data-bs-title attribute
+            if (anchorElement) {
+                // Get the tooltip title and trim any whitespace
+                const tooltipTitle = anchorElement.getAttribute('data-bs-title').trim().toLowerCase();
+                
+                // Show/hide row based on whether the tooltip title includes the filter text
+                if (tooltipTitle.includes(filter)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            } else {
+                // Fallback to the cell text content if no tooltip is found
+                const cellText = row.cells[2].textContent.toLowerCase();
+                row.style.display = cellText.includes(filter) ? "" : "none";
+            }
+        });
+    });
+    </script>
 
 {% endblock %}

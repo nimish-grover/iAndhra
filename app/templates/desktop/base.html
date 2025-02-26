@@ -19,17 +19,51 @@
           <div id="loading-content"></div>
         </div>
     </div>
-    <nav class="navbar fixed-top bg-primary justify-content-between py-2">        
-        <div class="ms-2">
-            <a class="navbar-brand text-white" href="{{url_for('mobile.index')}}">
-                <span class="me-2"><i class="fa-solid fa-droplet"></i></span>DPR</a>
-        </div>
-        <div>
-            <button class="btn text-white" type="button" data-bs-toggle="offcanvas" 
-            data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
-            <i class="fa-solid fa-bars"></i>
-            </button>
-        </div>
+    <nav class="navbar fixed-top bg-primary justify-content-between py-2">      
+        <div class="row w-100">
+            <div class="col">
+                <div class="ms-2">
+                    <a class="navbar-brand text-white" href="{{url_for('mobile.index')}}">
+                        <span class="me-2"><i class="fa-solid fa-droplet"></i></span>DPR</a>
+                </div>
+            </div>
+            
+            <div class="col-2 px-0 text-end">
+                <button class="btn text-white dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fa-solid fa-user"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    {% if current_user.is_authenticated %}
+                    {% if current_user.isAdmin %}
+                    <a class="list-group-item list-group-item-action p-3 loader fs-6" href="{{url_for('auth.dashboard')}}">
+                        <i class="fa-solid fa-gauge"></i>&nbsp;Dashboard
+                    </a>
+                    <a class="list-group-item list-group-item-action p-3 loader fs-6" href="{{url_for('auth.reset_password')}}">
+                        <i class="fa-solid fa-unlock-keyhole"></i>&nbsp;Reset Password
+                    </a>
+                    {% endif %}
+                    <a class="list-group-item list-group-item-action p-3 loader fs-6" href="{{url_for('auth.change_password')}}">
+                        <i class="fa-solid fa-user-pen"></i>&nbsp;Change Password
+                    </a>
+                    <a href="{{url_for('auth.logout')}}" class="list-group-item list-group-item-action p-3 loader fs-6">
+                        <i class="fa-solid fa-lock"></i>&nbsp;Logout
+                    </a>
+                {% else %}
+                <a href="{{url_for('auth.login')}}" class="list-group-item list-group-item-action p-3 loader fs-6">
+                    <i class="fa-solid fa-lock-open"></i>&nbsp;Login
+                </a>
+                {% endif %}
+                    
+                </ul>
+            </div>
+            <div class="col-1 px-0 text-end">
+                <button class="btn text-white" type="button" data-bs-toggle="offcanvas" 
+                data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
+                <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>  
+        
       </nav>
 
     {% from 'mobile/components.html' import bottom_menu, toggle_button, progress_bar, approve_button %}    
@@ -112,23 +146,11 @@
                     <a class="list-group-item list-group-item-action py-3 loader" href="{{url_for('auth.dashboard')}}">
                         <i class="fa-solid fa-gauge"></i>&nbsp;Dashboard
                     </a>
-                    <a class="list-group-item list-group-item-action py-3 loader" href="{{url_for('auth.reset_password')}}">
-                        <i class="fa-solid fa-unlock-keyhole"></i>&nbsp;Reset Password
-                    </a>
                     {% endif %}
-                    <a class="list-group-item list-group-item-action py-3 loader" href="{{url_for('auth.change_password')}}">
-                        <i class="fa-solid fa-user-pen"></i>&nbsp;Change Password
-                    </a>
                     <a href="{{url_for('mobile.home')}}" class="list-group-item list-group-item-action py-3 loader">
                         <i class="fa-solid fa-scale-unbalanced-flip"></i>&nbsp;Water Budget
                     </a>
-                    <a href="{{url_for('auth.logout')}}" class="list-group-item list-group-item-action py-3 loader">
-                        <i class="fa-solid fa-lock"></i>&nbsp;Logout
-                    </a>
                 {% else %}
-                <a href="{{url_for('auth.login')}}" class="list-group-item list-group-item-action py-3 loader">
-                    <i class="fa-solid fa-lock-open"></i>&nbsp;Login
-                </a>
                 <a href="{{url_for('mobile.index')}}" class="list-group-item list-group-item-action py-3 loader">
                     <i class="fa-solid fa-scale-unbalanced-flip"></i>&nbsp;Water Budget
                 </a>
