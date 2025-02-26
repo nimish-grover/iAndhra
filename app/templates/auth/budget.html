@@ -5,13 +5,14 @@ input_hidden, submit_button, progress_bar, tooltip, search_input, validation_inp
 {% block content %}
     {{table_title(title='Water Budget', subtitle=' ')}}
 
-    {{search_input(placeholder='Search Block')}}
+    {{search_input(placeholder='Search Panchayat')}}
     <div class="overflow-y-scroll overflow-x-hidden" style="height:55vh !important;">
         <table class="table table-bordered table-sm fs-7 mb-0">
             <thead class="text-center">
                 <tr>
-                    <th>State</th>
-                    <th style="max-width: 45px;">Block</th>
+                    <th>Dist</th>
+                    <th>Block</th>
+                    <th>Panchayat</th>
                     <th>Demand</th>
                     <th>Supply</th>
                     <th>Budget</th>
@@ -21,14 +22,17 @@ input_hidden, submit_button, progress_bar, tooltip, search_input, validation_inp
                 {% for row in budget %}
                 <tr id="row_{{ row['id'] }}">
                     {{ input_hidden(name='id', value=row['id']) }}
-                    <td class="text-center align-content-center">
-                        {{ tooltip(name=row['state_short_name'],full_name=row['state_name']) }}
+                    <td class="text-center align-content-center" >
+                        {{ tooltip(name=row['district_short_name'],full_name=row['district_name']) }}
                     </td>
                     <!-- <td class="text-start align-content-center text-truncate" style="max-width: 45px;">
                         {#{{ tooltip(name=row['district_name']) }}#}
                     </td> -->
-                    <td class="text-start align-content-center text-truncate" style="max-width: 45px;">
-                        {{ tooltip(name=row['block_name']) }}
+                    <td class="text-center align-content-center text-truncate" >
+                        {{ tooltip(full_name=row['block_name'],name = row['block_name'][:3]+'..') }}
+                    </td>
+                    <td class="text-center align-content-center text-truncate" >
+                        {{ tooltip(full_name=row['panchayat_name'],name = row['panchayat_name'][:3]+'..') }}
                     </td>
                     <td class="text-end">
                         {{row['total_demand']}}
@@ -51,20 +55,6 @@ input_hidden, submit_button, progress_bar, tooltip, search_input, validation_inp
     <input type="hidden" name="budget_data" id="budgetData" value="{{budget_data}}" >
 {% endblock %}
 {% block scripts %}
-<script>
-    // Search filter
-    document.getElementById("searchInput").addEventListener("input", function () {
-        const filter = this.value.toLowerCase();
-        const rows = document.querySelectorAll("#tablebody tr");
-        rows.forEach(row => {
-            const cropName = row.cells[2].textContent.toLowerCase();
-            if (cropName.includes(filter)) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        });
-    });
-</script>
+
 
 {% endblock %}

@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, cast, func
+from sqlalchemy import Integer, case, cast, func
 from app.db import db
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -57,191 +57,14 @@ class BlockProgress(db.Model):
         query = db.session.query(cls.id).filter(cls.bt_id == bt_id, cls.category_id==category_id).all()
         if query:
             return True
-        
-    def transform_data_districts(data):
-        output = []
-        colors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4']
-        color_index = 0
-
-        for district in data:
-            district_id = district['district_id']
-            district_data = district['data']
-
-            # Calculate percentage/completed (assume 100% completion if all `is_approved` are 1)
-            completed = sum(1 for entry in district_data if entry['is_approved'] == 1)
-            percentage = completed * 100 // len(district_data)
-
-            # Take the first entry as representative for static fields
-            first_entry = district_data[0]
-            temp_dict={}
-            temp_dict['district_id'] = first_entry['district_id']
-            temp_dict['district_name']=first_entry['district_name']
-            temp_dict['district_short_name']=first_entry['district_short_name']
-            temp_dict['category_id'] = first_entry['category_id']
-            temp_dict['completed']= percentage
-            temp_dict['percentage'] = percentage
-            temp_dict['bt_id'] = first_entry['bt_id']
-            temp_dict['color']= colors[color_index % len(colors)]
-            for district in district_data:
-                category_id = district['category_id']
-                if category_id:
-                    category=BlockCategory.get_category_name(category_id)
-                    temp_dict[category] = district['is_approved']
-            output.append(temp_dict)
-            color_index += 1
-            
-        sorted_dict = sorted(output, key=lambda x: x["completed"])
-        for idx, item in enumerate(sorted_dict):
-            item['id'] = idx + 1
-        return sorted_dict
     
     def transform_data_villages(data):
-        output = []
-        colors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4']
-        color_index = 0
-
-        for panchayat in data:
-            panchayat_id = panchayat['panchayat_id']
-            panchayat_data = panchayat['data']
-
-            # Calculate percentage/completed (assume 100% completion if all `is_approved` are 1)
-            completed = sum(1 for entry in panchayat_data if entry['is_approved'] == 1)
-            percentage = completed * 100 // len(panchayat_data)
-
-            # Take the first entry as representative for static fields
-            first_entry = panchayat_data[0]
-            temp_dict={}
-            temp_dict['block_id'] = first_entry['block_id']
-            temp_dict['district_id'] = first_entry['district_id']
-            temp_dict['panchayat_id'] = first_entry['panchayat_id']
-            temp_dict['district_name']=first_entry['district_name']
-            temp_dict['district_short_name']=first_entry['district_short_name']
-            temp_dict['block_name']= first_entry['block_name']
-            temp_dict['panchayat_name'] = first_entry['panchayat_name']
-            temp_dict['category_id'] = first_entry['category_id']
-            temp_dict['completed']= percentage
-            temp_dict['percentage'] = percentage
-            temp_dict['bt_id'] = first_entry['bt_id']
-            temp_dict['color']= colors[color_index % len(colors)]
-            for panchayat in panchayat_data:
-                category_id = panchayat['category_id']
-                if category_id:
-                    category=BlockCategory.get_category_name(category_id)
-                    temp_dict[category] = panchayat['is_approved']
-            output.append(temp_dict)
-            color_index += 1
-            
-        sorted_dict = sorted(output, key=lambda x: x["completed"])
-        for idx, item in enumerate(sorted_dict):
-            item['id'] = idx + 1
-        return sorted_dict
-
-    @classmethod
-    def get_all_villages_status(cls):
-        query = (
-                db.session.query(
-                    District.district_name.label("district_name"),
-                    District.short_name.label("district_short_name"),
-                    District.id.label("district_id"),
-                    Block.block_name.label("block_name"),
-                    Block.id.label("block_id"),
-                    Panchayat.id.label("panchayat_id"),
-                    Panchayat.panchayat_name.label("panchayat_name"),
-                    func.coalesce(BlockProgress.category_id, 0).label("category_id"),
-                    func.coalesce(BlockProgress.bt_id, 0).label("bt_id"),
-                    func.coalesce(func.min(cast(BlockProgress.is_approved, Integer)), 0).label("is_approved"),
-                )
-                .outerjoin(BlockTerritory, BlockTerritory.panchayat_id == Panchayat.id)
-                .outerjoin(BlockProgress, BlockProgress.bt_id == BlockTerritory.id)
-                .outerjoin(Block, Panchayat.block_lgd_code == Block.lgd_code)
-                .outerjoin(District, Block.district_lgd_code == District.lgd_code)
-                .group_by(
-                    BlockProgress.category_id,
-                    District.district_name,
-                    District.short_name,
-                    District.id,
-                    Block.block_name,
-                    Block.id,
-                    Panchayat.id,
-                    Panchayat.panchayat_name,
-                    BlockProgress.bt_id,
-                )
-                .order_by(BlockProgress.bt_id, BlockProgress.category_id)
-            )
+        villages = []
         
-        results = query.all()
-        grouped_data = {}
-        for row in results:
-            panchayat_id = str(row[6])  # Convert block_id to string for consistency
-            # Create a dictionary for each row
-            row_dict = {
-                "district_name": row[0],
-                "district_short_name": row[1],
-                "district_id": row[2],
-                "block_name": row[3],
-                "block_id": row[4],
-                "panchayat_id": row[5],
-                "panchayat_name": row[6],
-                "category_id": row[7],
-                "bt_id": row[8],
-                "is_approved": row[9],
-            }
-            # Check if the block_id already exists in grouped_data
-            if panchayat_id not in grouped_data:
-                grouped_data[str(panchayat_id)] = []  # Initialize with an empty list
-            grouped_data[str(panchayat_id)].append(row_dict)  # Append the row to the group
-
-        # Convert grouped data to the desired format
-        result = [{"panchayat_id": panchayat_id, "data": rows} for panchayat_id, rows in grouped_data.items()]
-        
-        return BlockProgress.transform_data_villages(result)
-
-    @classmethod
-    def get_all_districts_status(cls):
-        query = (
-                db.session.query(
-                    District.district_name.label("district_name"),
-                    District.short_name.label("district_short_name"),
-                    District.id.label("district_id"),
-                    func.coalesce(BlockProgress.category_id, 0).label("category_id"),
-                    func.coalesce(BlockProgress.bt_id, 0).label("bt_id"),
-                    func.coalesce(func.min(cast(BlockProgress.is_approved, Integer)), 0).label("is_approved"),
-                )
-                .outerjoin(BlockTerritory, BlockTerritory.district_id == District.id)
-                .outerjoin(BlockProgress, BlockProgress.bt_id == BlockTerritory.id)
-                .group_by(
-                    BlockProgress.category_id,
-                    District.district_name,
-                    District.short_name,
-                    District.id,
-                    BlockProgress.bt_id,
-                )
-                .order_by(BlockProgress.bt_id, BlockProgress.category_id)
-            )
-        
-        results = query.all()
-        grouped_data = {}
-        for row in results:
-            district_id = str(row[2])  # Convert block_id to string for consistency
-            # Create a dictionary for each row
-            row_dict = {
-                "district_name": row[0],
-                "district_short_name": row[1],
-                "district_id": row[2],
-                "category_id": row[3],
-                "bt_id": row[4],
-                "is_approved": row[5],
-            }
-            # Check if the block_id already exists in grouped_data
-            if district_id not in grouped_data:
-                grouped_data[str(district_id)] = []  # Initialize with an empty list
-            grouped_data[str(district_id)].append(row_dict)  # Append the row to the group
-
-        # Convert grouped data to the desired format
-        result = [{"district_id": district_id, "data": rows} for district_id, rows in grouped_data.items()]
-        
-        return BlockProgress.transform_data_districts(result)
-
+        for idx,village_data in enumerate(data):
+            if idx == 0 or village_data['village_id'] not in villages:
+                pass
+    
     @classmethod
     def get_status_by_bt_id(cls, bt_id):
         query = (
@@ -259,7 +82,6 @@ class BlockProgress(db.Model):
 
         results = query.all()
         return results
-
     
     def save_to_db(self):
         duplicate_item = self.check_duplicate(self.category_id,self.table_id,self.bt_id)
@@ -278,3 +100,289 @@ class BlockProgress(db.Model):
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
+        
+    @classmethod
+    def get_panchayat_progress(cls):
+        query = (
+            db.session.query(
+                District.short_name,
+                District.district_name,
+                Block.block_name,
+                Panchayat.panchayat_name,
+                func.count(func.distinct(Village.id)).label("total_villages"),
+                func.count(
+                    func.distinct(
+                        case(
+                            (BlockProgress.is_approved == True, func.concat(BlockProgress.category_id, '-', BlockProgress.bt_id))
+                        )
+                    )
+                ).label("completed_count"),
+                func.round(
+                    (
+                        func.count(
+                            func.distinct(
+                                case(
+                                    (BlockProgress.is_approved == True, func.concat(BlockProgress.category_id, '-', BlockProgress.bt_id))
+                                )
+                            )
+                        ).cast(db.Numeric) / (9 * func.count(func.distinct(Village.id)))
+                    ) * 100, 2
+                ).label("completed_percentage"),
+            )
+            .join(Block, Block.district_lgd_code == District.lgd_code)
+            .join(Panchayat, Panchayat.block_lgd_code == Block.lgd_code)
+            .join(Village, Village.panchayat_lgd_code == Panchayat.lgd_code)
+            .outerjoin(
+                BlockTerritory,
+                (BlockTerritory.district_id == District.id) &
+                (BlockTerritory.panchayat_id == Panchayat.id) &
+                (BlockTerritory.block_id == Block.id)
+            )
+            .outerjoin(BlockProgress, BlockProgress.bt_id == BlockTerritory.id)
+            .group_by(
+                District.short_name,
+                District.district_name,
+                Block.block_name,
+                Panchayat.panchayat_name
+            )
+            .having(
+                func.count(
+                    func.distinct(
+                        case(
+                            (BlockProgress.is_approved == True, func.concat(BlockProgress.category_id, '-', BlockProgress.bt_id))
+                        )
+                    )
+                ) > 0
+            )
+            .order_by(
+                "completed_percentage",
+                "completed_count",
+                District.district_name,
+                Panchayat.panchayat_name
+            )
+        )
+        
+        results = query.all()
+        progress_data = [{'district_short_name':item[0],
+                        'district_name':item[1],
+                        'block_name':item[2],
+                        'panchayat_name':item[3],
+                        'total_villages':item[4],
+                        'completed_count':item[5],
+                        'completed_percentage':int(item[6])} for item in results]
+        return progress_data
+    
+        """
+        SELECT
+        d.short_name,
+        d.district_name,
+        b.block_name,
+        p.panchayat_name,
+        COUNT(DISTINCT v.id) AS total_villages,
+        COUNT(DISTINCT CASE WHEN bp.is_approved = true THEN CONCAT(bp.category_id, '-', bp.bt_id) END) AS completed_count,
+        ROUND(
+            (COUNT(DISTINCT CASE WHEN bp.is_approved = true THEN CONCAT(bp.category_id, '-', bp.bt_id) END)::decimal / (9 * COUNT(DISTINCT v.id))) * 100,
+            2
+        ) AS completed_percentage
+    FROM
+        districts d
+        JOIN blocks b ON b.district_lgd_code = d.lgd_code
+        JOIN panchayats p ON p.block_lgd_code = b.lgd_code
+        JOIN villages v ON v.panchayat_lgd_code = p.lgd_code
+        LEFT JOIN block_territory bt ON bt.district_id = d.id AND bt.panchayat_id = p.id AND bt.block_id = b.id
+        LEFT JOIN block_progress bp ON bp.bt_id = bt.id
+    GROUP BY
+        d.short_name,
+        d.district_name,
+        b.block_name,
+        p.panchayat_name
+    HAVING
+        COUNT(DISTINCT CASE WHEN bp.is_approved = true THEN CONCAT(bp.category_id, '-', bp.bt_id) END) > 0
+    ORDER BY
+        completed_percentage,
+        completed_count,
+        d.district_name,
+        p.panchayat_name;
+        """
+    @classmethod
+    def get_district_progress(cls):
+        query = (
+            db.session.query(
+                District.short_name,
+                District.district_name,
+                func.count(func.distinct(Village.id)).label("total_villages"),
+                func.count(
+                    func.distinct(
+                        case(
+                            (BlockProgress.is_approved == True, BlockProgress.category_id)
+                        )
+                    )
+                ).label("completed_count"),
+                func.round(
+                    (
+                        func.count(
+                            func.distinct(
+                                case(
+                                    (BlockProgress.is_approved == True, BlockProgress.category_id)
+                                )
+                            )
+                        ).cast(db.Numeric) / (9 * func.count(func.distinct(Village.id)))
+                    ) * 100, 2
+                ).label("completed_percentage"),
+            )
+            .join(Village, Village.district_lgd_code == District.lgd_code)
+            .outerjoin(BlockTerritory, BlockTerritory.district_id == District.id)
+            .outerjoin(BlockProgress, BlockProgress.bt_id == BlockTerritory.id)
+            .group_by(District.district_name, District.short_name)
+            .order_by(District.district_name)
+        )
+        results = query.all()
+        progress_data = [{'district_short_name':item[0],
+                        'district_name':item[1],
+                        'total_villages':item[2],
+                        'completed_count':item[3],
+                        'completed_percentage':item[4]} for item in results]
+        return progress_data
+        """
+        SELECT
+            d.district_name,
+            COUNT(DISTINCT v.id) AS total_villages,
+            COUNT(DISTINCT CASE WHEN bp.is_approved = true THEN bp.category_id END) AS completed_count,
+            ROUND(
+                (COUNT(DISTINCT CASE WHEN bp.is_approved = true THEN bp.category_id END)::decimal / 
+                (9 * COUNT(DISTINCT v.id))) * 100,
+                2
+            ) AS completed_percentage
+        FROM
+            districts d
+            JOIN villages v ON v.district_lgd_code = d.lgd_code
+            LEFT JOIN block_territory bt ON bt.district_id = d.id
+            LEFT JOIN block_progress bp ON bp.bt_id = bt.id
+        GROUP BY
+            d.district_name
+        ORDER BY
+            d.district_name;
+        """
+    @classmethod
+    def get_village_progress(cls):
+        query = (
+                db.session.query(
+                    District.short_name,
+                    District.district_name,
+                    Block.block_name,
+                    Panchayat.panchayat_name,
+                    Village.village_name,
+                    Village.id.label("village_id"),
+                    Block.id.label("block_id"),
+                    Panchayat.id.label("panchayat_id"),
+                    District.id.label("district_id"),
+                    func.count(
+                        func.distinct(
+                            case(
+                                (BlockProgress.is_approved == True, func.concat(BlockProgress.category_id, '-', BlockProgress.bt_id))
+                            )
+                        )
+                    ).label("completed_count"),
+                    func.round(
+                        (
+                            func.count(
+                                func.distinct(
+                                    case(
+                                        (BlockProgress.is_approved == True, func.concat(BlockProgress.category_id, '-', BlockProgress.bt_id))
+                                    )
+                                )
+                            ).cast(db.Numeric) / 9
+                        ) * 100, 2
+                    ).label("completed_percentage"),
+                )
+                .join(Block, Block.district_lgd_code == District.lgd_code)
+                .join(Panchayat, Panchayat.block_lgd_code == Block.lgd_code)
+                .join(Village, Village.panchayat_lgd_code == Panchayat.lgd_code)
+                .outerjoin(
+                    BlockTerritory,
+                    (BlockTerritory.district_id == District.id) &
+                    (BlockTerritory.panchayat_id == Panchayat.id) &
+                    (BlockTerritory.block_id == Block.id) &
+                    (BlockTerritory.village_id == Village.id)
+                )
+                .outerjoin(BlockProgress, BlockProgress.bt_id == BlockTerritory.id)
+                .group_by(
+                    District.short_name,
+                    District.district_name,
+                    Block.block_name,
+                    Panchayat.panchayat_name,
+                    Village.village_name,
+                    Village.id,
+                    Block.id,
+                    Panchayat.id,
+                    District.id
+                )
+                .having(
+                    func.count(
+                        func.distinct(
+                            case(
+                                (BlockProgress.is_approved == True, func.concat(BlockProgress.category_id, '-', BlockProgress.bt_id))
+                            )
+                        )
+                    ) > 0
+                )
+                .order_by(
+                    "completed_count",
+                    District.district_name,
+                    Panchayat.panchayat_name
+                )
+            )
+        results = query.all()
+        progress_data = [{'district_short_name':item[0],
+                        'district_name':item[1],
+                        'block_name':item[2],
+                        'panchayat_name':item[3],
+                        'village_name':item[4],
+                        'village_id':item[5],
+                        'block_id':item[6],
+                        'panchayat_id':item[7],
+                        'district_id':item[8],
+                        'completed_count':item[9],
+                        'completed_percentage':item[10]} for item in results]
+        return progress_data        
+        """
+    SELECT
+        d.short_name,
+        d.district_name,
+        b.block_name,
+        p.panchayat_name,
+        v.village_name,
+        v.id as village_id,
+        b.id as block_id,
+        p.id as panchayat_id,
+        d.id as district_id,
+        COUNT(DISTINCT CASE WHEN bp.is_approved = true THEN CONCAT(bp.category_id, '-', bp.bt_id) END) AS completed_count,
+        ROUND(
+            (COUNT(DISTINCT CASE WHEN bp.is_approved = true THEN CONCAT(bp.category_id, '-', bp.bt_id) END)::decimal /9)*100,
+            2
+        ) AS completed_percentage
+    FROM
+        districts d
+        JOIN blocks b ON b.district_lgd_code = d.lgd_code
+        JOIN panchayats p ON p.block_lgd_code = b.lgd_code
+        JOIN villages v ON v.panchayat_lgd_code = p.lgd_code
+        LEFT JOIN block_territory bt ON bt.district_id = d.id AND bt.panchayat_id = p.id AND bt.block_id = b.id and bt.village_id = v.id
+        LEFT JOIN block_progress bp ON bp.bt_id = bt.id
+    GROUP BY
+        d.short_name,
+        d.district_name,
+        b.block_name,
+        p.panchayat_name,
+        v.village_name,
+        v.id,
+        b.id,
+        p.id,
+        d.id
+    HAVING
+        COUNT(DISTINCT CASE WHEN bp.is_approved = true THEN CONCAT(bp.category_id, '-', bp.bt_id) END) > 0
+    ORDER BY
+        completed_count,
+        d.district_name,
+        p.panchayat_name;
+        """
+        

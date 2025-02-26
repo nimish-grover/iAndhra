@@ -4,7 +4,7 @@
 input_hidden, floating_select, search_input,validation_input,validation_select%}
 {% block content %}
 {{table_title(title='Approve Users')}}
-{{search_input(placeholder='Search User')}}
+{{search_input(placeholder='Search Panchayat')}}
 <div class="overflow-y-scroll" style="height:30vh !important;">
     <table class="table table-bordered table-sm fs-7 mb-0">
         <thead class="text-center">
@@ -52,6 +52,36 @@ input_hidden, floating_select, search_input,validation_input,validation_select%}
 {% endblock %}
 {% block scripts %}
 <script>
+    // Search filter based on tooltip title
+    document.getElementById("searchInput").addEventListener("input", function () {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#tablebody tr");
+        
+        rows.forEach(row => {
+            // Get the anchor element in the cell that contains the tooltip
+            const anchorElement = row.cells[2].querySelector('a[data-bs-title]');
+            
+            // Check if anchor element exists and has the data-bs-title attribute
+            if (anchorElement) {
+                // Get the tooltip title and trim any whitespace
+                const tooltipTitle = anchorElement.getAttribute('data-bs-title').trim().toLowerCase();
+                
+                // Show/hide row based on whether the tooltip title includes the filter text
+                if (tooltipTitle.includes(filter)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            } else {
+                // Fallback to the cell text content if no tooltip is found
+                const cellText = row.cells[2].textContent.toLowerCase();
+                row.style.display = cellText.includes(filter) ? "" : "none";
+            }
+        });
+    });
+    </script>
+<script>
+    
 const btnSubmit = document.getElementById('btn_submit');
 let users = JSON.parse(document.getElementById('userData').value);
 const postUrl = document.getElementById('postUrl').value;
@@ -71,19 +101,19 @@ function toggleUserStatus(checkbox) {
     }
 }
 
-// Search Input
-document.getElementById("searchInput").addEventListener("input", function () {
-    const filter = this.value.toLowerCase();
-    const rows = document.querySelectorAll("#tablebody tr");
-    rows.forEach(row => {
-        const cropName = row.cells[1].textContent.toLowerCase();
-        if (cropName.includes(filter)) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
-        }
-    });
-});
+// // Search Input
+// document.getElementById("searchInput").addEventListener("input", function () {
+//     const filter = this.value.toLowerCase();
+//     const rows = document.querySelectorAll("#tablebody tr");
+//     rows.forEach(row => {
+//         const cropName = row.cells[1].textContent.toLowerCase();
+//         if (cropName.includes(filter)) {
+//             row.style.display = "";
+//         } else {
+//             row.style.display = "none";
+//         }
+//     });
+// });
 
 // Submit button event
 btnSubmit.addEventListener("click", (event) => {

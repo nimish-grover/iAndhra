@@ -164,13 +164,9 @@ def approve():
 @blp.route('/dashboard',methods=['POST','GET'])
 @login_required
 def dashboard():
-    dashboard_data = HelperClass.get_dashboard_menu()
-    card_data = HelperClass.get_card_data(dashboard_data)
+    card_data = HelperClass.get_card_data()
     chart_data =HelperClass.get_chart_data()
-    # for data in dashboard_data:
-    #     if data['completed']:
-    #         chart_data.append(data)
-            
+
     return render_template('auth/dashboard.html',
                            card_data = card_data,
                            chart_data = json.dumps(chart_data),
@@ -181,7 +177,7 @@ def dashboard():
 @login_required
 def progress():
     if current_user.isAdmin:
-        progress = HelperClass.get_dashboard_menu()
+        progress = HelperClass.get_panchayat_progress()
         status_dummy = [{'category':'Human','id':'human'},
                         {'category':'Livestocks','id':'livestock'},
                         {'category':'Crops','id':'crop'},
@@ -192,7 +188,7 @@ def progress():
                         {'category':'Rainfall','id':'rainfall'},
                         {'category':'Water Transfer','id':'transfer'}]
         return render_template('auth/progress.html',
-                            progress=sorted(progress, key=lambda x: x["completed"], reverse=True),
+                            progress=sorted(progress, key=lambda x: x["completed_percentage"], reverse=True),
                             status = status_dummy,
                             menu = HelperClass.get_admin_menu(),
                             progress_data = json.dumps(progress))
@@ -203,22 +199,9 @@ def progress():
     
 @blp.route('/budget',methods=['POST','GET'])
 def budget():
-    filtered_data = HelperClass.get_dashboard_menu()
-    budget_array = []
-    for idx,data in enumerate(filtered_data):
-        if data['completed'] == 100:
-            demand_side = BlockOrCensus.get_demand_side_data(data['village_id'],data['panchayat_id'],data['block_id'],data['district_id'])
-            total_demand = int(sum([item['water_value'] for item in demand_side]))
-            supply_side = BlockOrCensus.get_supply_side_data(data['village_id'],data['panchayat_id'],data['block_id'],data['district_id'])
-            total_supply = int(sum([item['water_value'] for item in supply_side]))
-            budget = int(total_supply - total_demand)
-            
-            budget_array.append({'id':idx+1,'block_id':data['block_id'],'district_id':data['district_id'],
-                            'district_short_name':data['district_short_name'],'district_name':data['district_name'],
-                            'block_name':data['block_name'],'total_demand':total_demand,
-                            'total_supply':total_supply,'budget':budget})
-        
-    return render_template('auth/budget.html',budget = budget_array,menu= HelperClass.get_admin_menu()) 
+    budget_data = HelperClass.get_budget_data()
+    
+    return render_template('auth/budget.html',budget = budget_data,menu= HelperClass.get_admin_menu()) 
 
 def get_message():
     messages = get_flashed_messages()

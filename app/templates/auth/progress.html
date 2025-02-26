@@ -32,14 +32,14 @@ input_hidden, submit_button, progress_bar, tooltip, search_input, validation_inp
                     <td class="text-center align-content-center" style="max-width: 100px;">
                         <div class="progress-bar-anchor fetch-row-data style="cursor: pointer;">
                             <div class="row">
-                                <div class="col-10">
-                                    {{ progress_bar(completed=row['completed']) }}
+                                <div class="col">
+                                    {{ progress_bar(completed=row['completed_percentage']) }}
                                 </div>
-                                <div class="col-1 p-0 d-grid align-items-center">
+                                <!-- <div class="col-1 p-0 d-grid align-items-center">
                                     <span class="text-center fs-9">
                                         <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                     </span>
-                                </div>
+                                </div> -->
                             </div>
 
                         </div>
@@ -51,7 +51,7 @@ input_hidden, submit_button, progress_bar, tooltip, search_input, validation_inp
     </div>
     <input type="hidden" name="progress_data" id="progressData" value="{{progress_data}}">
 </section>
-<section class="visually-hidden">
+<!-- <section class="visually-hidden">
         <div class="container-fluid">
             <nav style="--bs-breadcrumb-divider: '|';" aria-label="breadcrumb">
                 <ol class="breadcrumb fs-9">
@@ -102,13 +102,13 @@ input_hidden, submit_button, progress_bar, tooltip, search_input, validation_inp
     <div class="text-end mt-2">
         <button class="btn btn-outline-dark btn-sm" id="btnBack">Back</button>
     </div>
-</section>
+</section> -->
 
 
 
 {% endblock %}
 {% block scripts %}
-<script>
+<!-- <script>
     // Elements
     const sectionProgress = document.querySelector("section:first-of-type");
     const sectionInput = document.querySelector("section:last-of-type");
@@ -208,6 +208,6 @@ input_hidden, submit_button, progress_bar, tooltip, search_input, validation_inp
             }
         });
     });
-</script>
+</script> -->
 
 {% endblock %}

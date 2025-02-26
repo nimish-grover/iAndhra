@@ -1,6 +1,7 @@
 from itertools import cycle
 from flask import url_for
 
+from app.classes.block_or_census import BlockOrCensus
 from app.models.block_progress import BlockProgress
 from app.models.users import User
 
@@ -15,43 +16,99 @@ class HelperClass():
         return version
     
     @classmethod
-    def get_dashboard_menu(cls):
-        progress_data = BlockProgress.get_all_villages_status()
-        chart_data = []
+    def aggregate_by_panchayat(cls,data):
+        # Create a dictionary to store aggregated panchayat data
+        panchayat_map = {}
         
-        color_cycle = cycle(cls.COLORS)
-        for item in progress_data:
-            if item['bt_id']:
-                color = next(color_cycle)
-                chart_data.append({'panchayat_name':item['panchayat_name'], 'completed':item['completed'],
-                                'block_name':item['block_name'],'percentage':str(item['completed'])+'%',
-                                'color':color,'district_name':item['district_name'],'category_id':item['category_id'],
-                                'district_short_name':item['district_short_name'],'bt_id':item['bt_id']})
-        return chart_data
+        # Process each village entry
+        for village in data:
+            panchayat_id = village['panchayat_id']
+            
+            # If this panchayat hasn't been seen before, initialize it
+            if panchayat_id not in panchayat_map:
+                panchayat_map[panchayat_id] = {
+                    'panchayat_id': panchayat_id,
+                    'panchayat_name': village['panchayat_name'],
+                    'block_id': village['block_id'],
+                    'block_name': village['block_name'],
+                    'district_id': village['district_id'],
+                    'district_name': village['district_name'],
+                    'district_short_name': village['district_short_name'],
+                    'total_supply': 0,
+                    'total_demand': 0,
+                    'budget': 0,
+                    'villages': []
+                }
+            
+            # Aggregate the values
+            panchayat_map[panchayat_id]['total_supply'] += village['total_supply']
+            panchayat_map[panchayat_id]['total_demand'] += village['total_demand']
+            panchayat_map[panchayat_id]['budget'] += village['budget']
+            
+            # Add this village to the list
+            panchayat_map[panchayat_id]['villages'].append({
+                'id': village['id'],
+                'village_id': village['village_id'],
+                'village_name': village['village_name'],
+                'total_supply': village['total_supply'],
+                'total_demand': village['total_demand'],
+                'budget': village['budget']
+            })
+        
+        # Convert the map to a list
+        return list(panchayat_map.values())
+    
+    @classmethod
+    def get_budget_data(cls):
+        progress_data = BlockProgress.get_village_progress()
+        budget_array = []
+        for idx,data in enumerate(progress_data):
+            demand_side = BlockOrCensus.get_demand_side_data(data['village_id'],data['panchayat_id'],data['block_id'],data['district_id'])
+            total_demand = int(sum([item['water_value'] for item in demand_side]))
+            supply_side = BlockOrCensus.get_supply_side_data(data['village_id'],data['panchayat_id'],data['block_id'],data['district_id'])
+            total_supply = int(sum([item['water_value'] for item in supply_side]))
+            budget = int(total_supply - total_demand)
+            
+            budget_array.append({'id':idx+1,'block_id':data['block_id'],'district_id':data['district_id'],
+                            'district_short_name':data['district_short_name'],'district_name':data['district_name'],
+                            'block_name':data['block_name'],'total_demand':total_demand,'village_name':data['village_name'],
+                            'total_supply':total_supply,'budget':budget,'village_id':data['village_id'],
+                            'panchayat_id':data['panchayat_id'],'panchayat_name':data['panchayat_name']})
+        budget_array = cls.aggregate_by_panchayat(budget_array)
+        budget_array = sorted(budget_array, key=lambda x: x["budget"])
+        return budget_array
+    
+    @classmethod
+    def get_panchayat_progress(cls):
+        progress_data = BlockProgress.get_panchayat_progress()
+        return progress_data
     
     @classmethod
     def get_chart_data(cls):
-        progress_data = BlockProgress.get_all_districts_status()
+        progress_data = BlockProgress.get_district_progress()
         chart_data = []
         
         color_cycle = cycle(cls.COLORS)
         for item in progress_data:
-            if item['completed']:
+            if item['completed_percentage']:
                 color = next(color_cycle)
-                chart_data.append({'completed':item['completed'],'percentage':str(item['completed'])+'%',
-                                'color':color,'district_name':item['district_name'],'category_id':item['category_id'],
-                                'district_short_name':item['district_short_name'],'bt_id':item['bt_id']})
+                chart_data.append({'completed':item['completed_percentage'],'percentage':str(item['completed_percentage'])+'%',
+                                'color':color,'district_name':item['district_name'],
+                                'district_short_name':item['district_short_name']})
+        chart_data = sorted(chart_data, key=lambda x: x["completed"])
         return chart_data
     
     @classmethod
-    def get_card_data(cls,chart_data):
-        completed_blocks = sum(1 for item in chart_data if item.get('completed') == 100)
+    def get_card_data(cls):
+        panchayat_progress = BlockProgress.get_panchayat_progress()
+        panchayat_in_progress = len(panchayat_progress)
+        panchayat_completed = sum(1 for item in panchayat_progress if int(item.get('completed_percentage')) == 100)
         user_status = User.get_active_count()
         return [
             {'title': 'Users Active', 'value': cls.format_value(user_status['active_users']), 'icon': 'fa-user-gear'},
             {'title': 'Users Registered', 'value': cls.format_value(user_status['active_users']+user_status['inactive_users']), 'icon': 'fa-user-check'},
-            {'title': 'Panchayats In-Progress', 'value': cls.format_value(len(chart_data)-completed_blocks), 'icon': 'fa-gears'},
-            {'title': 'Panchayats Completed', 'value': cls.format_value(completed_blocks), 'icon': 'fa-list-check'}]
+            {'title': 'Panchayats In-Progress', 'value': cls.format_value(panchayat_in_progress), 'icon': 'fa-gears'},
+            {'title': 'Panchayats Completed', 'value': cls.format_value(panchayat_completed), 'icon': 'fa-list-check'}]
     
     def format_value(value):
         if value < 10:
@@ -103,8 +160,6 @@ class HelperClass():
             return formatted_integer
         else:
             return f"{formatted_integer}.{decimal_part}"
-
-
 
     def get_supply_menu():
         return [
