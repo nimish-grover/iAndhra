@@ -1,6 +1,5 @@
 from sqlalchemy import func
 from app.db import db
-# from app.models.territory import TerritoryJoin
 
 class Village(db.Model):
     __tablename__ = 'villages'
@@ -56,14 +55,4 @@ class Village(db.Model):
             "census_code": self.census_code
         }
     
-    # @classmethod
-    # def get_villages_number_by_block(cls,block_id,district_id):
-    #     query = db.session.query(
-    #         func.count(Village.id).label("village_count")
-    #         ).join(TerritoryJoin, TerritoryJoin.village_id == Village.id
-    #         ).filter(
-    #             TerritoryJoin.block_id == block_id,
-    #             TerritoryJoin.district_id == district_id
-    #         )
-    #     results = query.first()
-    #     return results.village_count
+    

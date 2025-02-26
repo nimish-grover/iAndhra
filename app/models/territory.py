@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from app.db import db
 from app.models.states import State
 from app.models.districts import District
@@ -159,3 +160,14 @@ class TerritoryJoin(db.Model):
         else:
             return None
     
+    @classmethod
+    def get_villages_number_by_panchayat(cls,panchayat_id,block_id,district_id):
+        query = db.session.query(
+            func.count(cls.id).label("village_count")
+            ).filter(
+                cls.panchayat_id == panchayat_id,
+                cls.block_id == block_id,
+                cls.district_id == district_id
+            )
+        results = query.first()
+        return results.village_count

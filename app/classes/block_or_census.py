@@ -287,7 +287,7 @@ class BlockOrCensus:
         return entity_consumption
 
     @classmethod
-    def get_tga(cls,village_id,panchayat_id, block_id, district_id, state_id):
+    def get_tga(cls,village_id,panchayat_id, block_id, district_id, state_id=2):
         bt_id = BlockData.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         if bt_id:
             lulc_data = BlockLULC.get_block_lulc_data(bt_id)
