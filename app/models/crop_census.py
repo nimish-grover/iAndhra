@@ -11,14 +11,14 @@ class CropCensus(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     territory_id = db.Column(db.Integer, db.ForeignKey('territory_joins.id'), nullable=False)
-    panchayat_lgd_code = db.Column(db.Integer, db.ForeignKey('villages.lgd_code'), nullable=False)
+    panchayat_lgd_code = db.Column(db.Integer, db.ForeignKey('panchayats.lgd_code'), nullable=False)
     crop_id = db.Column(db.Integer, db.ForeignKey('crops.id'), nullable=False)
     crop_area = db.Column(db.Float, nullable=False)
 
 
     # Relationships
     territory = db.relationship('TerritoryJoin', backref=db.backref('crop_census', lazy="dynamic"))
-    village = db.relationship('Village', backref=db.backref('crop_census', lazy="dynamic"))
+    panchayat = db.relationship('Panchayat', backref=db.backref('crop_census', lazy="dynamic"))
     crop = db.relationship('Crop', backref=db.backref('crop_census', lazy="dynamic"))
 
     def __init__(self, territory_id, panchayat_lgd_code, crop_id, crop_area):

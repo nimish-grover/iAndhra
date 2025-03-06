@@ -15,14 +15,14 @@ class GroundwaterExtraction(db.Model):
     extractable = db.Column(db.Float, nullable=False, default=0)
     extraction = db.Column(db.Float, nullable=False, default=0)
     category = db.Column(db.String(80), nullable=False, default='')
-    panchayat_id = db.Column(db.ForeignKey('villages.id'), nullable=False)
+    panchayat_id = db.Column(db.ForeignKey('panchayats.id'), nullable=False)
 
     block_id = db.Column(db.ForeignKey('blocks.id'), nullable=False)
     district_id = db.Column(db.ForeignKey('districts.id'), nullable=False)
     tj_id = db.Column(db.ForeignKey('territory_joins.id'), nullable=False)
 
     block = db.relationship('Block', backref=db.backref("groundwater_extractions", lazy="dynamic"))
-    village = db.relationship('Village', backref=db.backref("groundwater_extractions", lazy="dynamic"))
+    panchayat = db.relationship('Panchayat', backref=db.backref("groundwater_extractions", lazy="dynamic"))
 
     district = db.relationship('District', backref=db.backref("groundwater_extractions", lazy="dynamic"))
     territory_join = db.relationship("TerritoryJoin", backref=db.backref("groundwater_extractions", lazy="dynamic"))
