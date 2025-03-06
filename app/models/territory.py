@@ -14,27 +14,26 @@ class TerritoryJoin(db.Model):
     district_id = db.Column(db.Integer, db.ForeignKey('districts.id'), nullable=False)
     block_id = db.Column(db.Integer, db.ForeignKey('blocks.id'), nullable=True)
     panchayat_id = db.Column(db.Integer, db.ForeignKey('panchayats.id'), nullable=True)
-    village_id = db.Column(db.Integer, db.ForeignKey('villages.id'), nullable=False)
+    # village_id = db.Column(db.Integer, db.ForeignKey('villages.id'), nullable=False)
 
     # Relationships
     state = db.relationship("State", backref=db.backref("territory_joins", lazy="dynamic"))
     district = db.relationship("District", backref=db.backref("territory_joins", lazy="dynamic"))
     block = db.relationship("Block", backref=db.backref("territory_joins", lazy="dynamic"))
     panchayat = db.relationship("Panchayat", backref=db.backref("territory_joins", lazy="dynamic"))
-    village = db.relationship("Village", backref=db.backref("territory_joins", lazy="dynamic"))
+    # village = db.relationship("Village", backref=db.backref("territory_joins", lazy="dynamic"))
 
-    def __init__(self, state_id, district_id, block_id=None, panchayat_id=None,village_id=None, rec_status=0):
+    def __init__(self, state_id, district_id, block_id=None, panchayat_id=None, rec_status=0):
         self.state_id = state_id
         self.district_id = district_id
         self.panchayat_id = panchayat_id
         self.block_id = block_id
-        self.village_id = village_id
         self.rec_status = rec_status
 
     def __repr__(self):
         return (f"<TerritoryJoin(id={self.id}, state_id={self.state_id}, "
                 f"district_id={self.district_id}, block_id={self.block_id}, "
-                f"village_id={self.village_id}, rec_status={self.rec_status})>")
+                f"rec_status={self.rec_status})>")
 
     def json(self):
         return {
@@ -43,7 +42,6 @@ class TerritoryJoin(db.Model):
             "district_id": self.district_id,
             "block_id": self.block_id,
             "panchayat_id": self.panchayat_id,
-            "village_id": self.village_id,
             "rec_status": self.rec_status
         }
     @classmethod

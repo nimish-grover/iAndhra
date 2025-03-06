@@ -22,7 +22,7 @@ class BlockTerritory(db.Model):
     district_id = db.Column(db.ForeignKey('districts.id'), nullable=False)
     block_id = db.Column(db.ForeignKey('blocks.id'), nullable=False)
     panchayat_id = db.Column(db.ForeignKey('panchayats.id'), nullable=True)
-    village_id = db.Column(db.ForeignKey('villages.id'),unique=True, nullable=True)
+    # village_id = db.Column(db.ForeignKey('villages.id'),unique=True, nullable=True)
     is_approved = db.Column(db.Boolean, nullable=False, default=False)
     created_on = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(ZoneInfo('Asia/Kolkata')))
     
@@ -32,12 +32,11 @@ class BlockTerritory(db.Model):
     # panchayat = db.relationship('Panchayat', backref=db.backref('block_territory', lazy='dynamic'))
     village = db.relationship('Village', backref=db.backref('block_territory', lazy='dynamic'))
     
-    def __init__(self,state_id,district_id, block_id,panchayat_id,village_id ,is_approved=False):
+    def __init__(self,state_id,district_id, block_id,panchayat_id,is_approved=False):
         self.state_id = state_id
         self.district_id = district_id
         self.block_id = block_id
         self.panchayat_id = panchayat_id
-        self.village_id = village_id
         self.is_approved = is_approved
   
     def json(self):
@@ -47,7 +46,6 @@ class BlockTerritory(db.Model):
             "district_id":self.district_id,
             "block_id":self.block_id,
             "panchayat_id":self.panchayat_id,
-            "village_id":self.village_id,
             "is_approved":self.is_approved,
             "created_on":self.created_on    
         }
@@ -61,13 +59,12 @@ class BlockTerritory(db.Model):
             return None
     
     @classmethod
-    def get_bt_id(cls,village_id,panchayat_id,block_id, district_id, state_id):
+    def get_bt_id(cls,panchayat_id,block_id, district_id, state_id):
         return db.session.query(cls.id).filter(
                 cls.block_id == block_id,
                 cls.district_id == district_id,
                 cls.state_id == state_id,
                 cls.panchayat_id == panchayat_id,
-                cls.village_id == village_id
             ).scalar()
     
     

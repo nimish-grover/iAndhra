@@ -15,7 +15,7 @@ def create_app():
     load_dotenv()
     
     # configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://db_master:w24JyTn0SIEHfS@144.24.103.183:5432/iAndhra'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://db_master:w24JyTn0SIEHfS@144.24.103.183:5432/andhra_panchayat'
 #PRODUCTION DB
     # app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("JALAGAM_DATABASE_URL") #DEVELOPMENT DB
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True

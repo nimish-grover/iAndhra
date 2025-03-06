@@ -15,7 +15,7 @@ class GroundwaterExtraction(db.Model):
     extractable = db.Column(db.Float, nullable=False, default=0)
     extraction = db.Column(db.Float, nullable=False, default=0)
     category = db.Column(db.String(80), nullable=False, default='')
-    village_id = db.Column(db.ForeignKey('villages.id'), nullable=False)
+    panchayat_id = db.Column(db.ForeignKey('villages.id'), nullable=False)
 
     block_id = db.Column(db.ForeignKey('blocks.id'), nullable=False)
     district_id = db.Column(db.ForeignKey('districts.id'), nullable=False)
@@ -29,7 +29,7 @@ class GroundwaterExtraction(db.Model):
 
     def __init__(self, stage_of_extraction, rainfall, recharge, 
                  discharge, extractable, extraction, category, 
-                 block_id, district_id,village_id):
+                 block_id, district_id,panchayat_id):
         self.stage_of_extraction = stage_of_extraction
         self.rainfall = rainfall
         self.recharge = recharge
@@ -39,7 +39,7 @@ class GroundwaterExtraction(db.Model):
         self.category = category
         self.block_id = block_id
         self.district_id = district_id
-        self.village_id = village_id
+        self.panchayat_id = panchayat_id
 
     def json(self):
         return {
@@ -50,6 +50,7 @@ class GroundwaterExtraction(db.Model):
             'extractable': self.extractable,
             'extraction': self.extraction,
             'category': self.category,
+            'panchayat_id': self.panchayat_id,
             'block_id': self.block_id,
             'district_id': self.district_id,
             

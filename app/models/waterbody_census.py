@@ -16,19 +16,19 @@ class WaterbodyCensus(db.Model):
     longitude = db.Column(db.String(80), nullable=True)
     latitude = db.Column(db.String(80), nullable=True)
     waterbody_id = db.Column(db.Integer, db.ForeignKey("waterbody_types.id"), nullable=False)
-    village_code = db.Column(db.Integer, db.ForeignKey("villages.lgd_code"), nullable=False)
+    # village_code = db.Column(db.Integer, db.ForeignKey("villages.lgd_code"), nullable=False)
     # block_code = db.Column(db.Integer, db.ForeignKey("blocks.lgd_code"), nullable=True)
     district_code = db.Column(db.Integer, db.ForeignKey("districts.lgd_code"), nullable=False)
     tj_id = db.Column(db.Integer, db.ForeignKey("territory_joins.id"), nullable=False)
 
-    village = db.relationship("Village", backref=db.backref("waterbodies_census", lazy="dynamic"))
+    # village = db.relationship("Village", backref=db.backref("waterbodies_census", lazy="dynamic"))
     # block = db.relationship("Block", backref=db.backref("waterbodies_census", lazy="dynamic"))
     district = db.relationship("District", backref=db.backref("waterbodies_census", lazy="dynamic"))
     territory_join = db.relationship("TerritoryJoin", backref=db.backref("waterbodies_census", lazy="dynamic"))
     waterbody_type = db.relationship("WaterbodyType", backref=db.backref("waterbodies_census", lazy="dynamic"))
 
     def __init__(self, spread_area, storage_capacity, max_depth, longitude=None, latitude=None, 
-                 waterbody_id=None, village_code=None, block_code=None, district_code=None, 
+                 waterbody_id=None, block_code=None, district_code=None, 
                  tj_id=None):
         """
         Initialize the WaterbodiesCensus instance with the provided attributes.
@@ -39,7 +39,6 @@ class WaterbodyCensus(db.Model):
         self.longitude = longitude
         self.latitude = latitude
         self.waterbody_id = waterbody_id
-        self.village_code = village_code
         self.block_code = block_code
         self.district_code = district_code
         self.tj_id = tj_id
@@ -52,8 +51,7 @@ class WaterbodyCensus(db.Model):
                 f"storage_capacity={self.storage_capacity}, max_depth={self.max_depth}, "
                 f"longitude='{self.longitude}', latitude='{self.latitude}', "
                 f"waterbody_id={self.waterbody_id}, village_code={self.village_code}, "
-                f"block_code={self.block_code}, district_code={self.district_code}, "
-                f"village_id={self.tj_id})>")
+                f"block_code={self.block_code}, district_code={self.district_code}, ")
 
     def json(self):
         """
@@ -67,7 +65,6 @@ class WaterbodyCensus(db.Model):
             "longitude": self.longitude,
             "latitude": self.latitude,
             "waterbody_id": self.waterbody_id,
-            "village_code": self.village_code,
             "block_code": self.block_code,
             "district_code": self.district_code,
             "tj_id": self.tj_id
