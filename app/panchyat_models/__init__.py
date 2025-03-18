@@ -2,7 +2,6 @@
 from app.models.states import State
 from app.models.districts import District
 from app.models.blocks import Block
-from app.models.villages import Village
 from app.models.panchayats import Panchayat
 
 from app.models.territory import TerritoryJoin

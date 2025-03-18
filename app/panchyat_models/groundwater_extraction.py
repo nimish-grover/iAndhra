@@ -1,8 +1,9 @@
 from sqlalchemy import func
 from app.db import db
-from app.models import Block, District,Village
+from app.models import Block, District
 from app.models.block_ground import BlockGround
 from app.models.block_territory import BlockTerritory	
+from app.models.panchayats import Panchayat
 
 class GroundwaterExtraction(db.Model):
     __tablename__ = "groundwater_extractions"
@@ -15,21 +16,21 @@ class GroundwaterExtraction(db.Model):
     extractable = db.Column(db.Float, nullable=False, default=0)
     extraction = db.Column(db.Float, nullable=False, default=0)
     category = db.Column(db.String(80), nullable=False, default='')
-    village_id = db.Column(db.ForeignKey('villages.id'), nullable=False)
+    panchayat_id = db.Column(db.ForeignKey('panchayats.id'), nullable=False)
 
     block_id = db.Column(db.ForeignKey('blocks.id'), nullable=False)
     district_id = db.Column(db.ForeignKey('districts.id'), nullable=False)
     tj_id = db.Column(db.ForeignKey('territory_joins.id'), nullable=False)
 
     block = db.relationship('Block', backref=db.backref("groundwater_extractions", lazy="dynamic"))
-    village = db.relationship('Village', backref=db.backref("groundwater_extractions", lazy="dynamic"))
+    panchayat = db.relationship('Panchayat', backref=db.backref("groundwater_extractions", lazy="dynamic"))
 
     district = db.relationship('District', backref=db.backref("groundwater_extractions", lazy="dynamic"))
     territory_join = db.relationship("TerritoryJoin", backref=db.backref("groundwater_extractions", lazy="dynamic"))
 
     def __init__(self, stage_of_extraction, rainfall, recharge, 
                  discharge, extractable, extraction, category, 
-                 block_id, district_id,village_id):
+                 block_id, district_id,panchayat_id):
         self.stage_of_extraction = stage_of_extraction
         self.rainfall = rainfall
         self.recharge = recharge
@@ -39,7 +40,7 @@ class GroundwaterExtraction(db.Model):
         self.category = category
         self.block_id = block_id
         self.district_id = district_id
-        self.village_id = village_id
+        self.panchayat_id = panchayat_id
 
     def json(self):
         return {
@@ -50,21 +51,24 @@ class GroundwaterExtraction(db.Model):
             'extractable': self.extractable,
             'extraction': self.extraction,
             'category': self.category,
+            'panchayat_id': self.panchayat_id,
             'block_id': self.block_id,
             'district_id': self.district_id,
             
         }
     @classmethod
-    def get_census_data_groundwater(cls, village_id,panchayat_id,block_id, district_id):
+    def get_census_data_groundwater(cls,panchayat_id,block_id, district_id):
         query = db.session.query(
                 cls.extractable,
                 cls.extraction,
                 cls.stage_of_extraction,
                 cls.category,
                 cls.block_id.label('block_id')
+        ).select_from(cls
+        ).join(Panchayat, Panchayat.id==cls.panchayat_id
         ).join(Block, Block.id==cls.block_id
         ).join(District, District.id==cls.district_id
-        ).filter(cls.block_id==block_id, District.id==district_id,Village.id == village_id)
+        ).filter(cls.block_id==block_id, District.id==district_id,Panchayat.id == panchayat_id)
 
         results = query.all()
 

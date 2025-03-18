@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 from app.models.districts import District
 from app.models.blocks import Block
 from app.models.panchayats import Panchayat
-from app.models.villages import Village
 from app.models.block_territory import BlockTerritory
 from app.models.block_category import BlockCategory
 

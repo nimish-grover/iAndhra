@@ -44,7 +44,7 @@ class PopulationCensus(db.Model):
             "territory_id": self.territory_id
         }
     @classmethod
-    def get_census_data_population(cls, village_id,panchayat_id,block_id, district_id):
+    def get_census_data_population(cls,panchayat_id,block_id, district_id):
         query = db.session.query(
             func.sum(PopulationCensus.population_count).label("population_count"),
             Population.id,
@@ -55,7 +55,6 @@ class PopulationCensus(db.Model):
                 TerritoryJoin.block_id == block_id,
                 TerritoryJoin.district_id == district_id,
                 TerritoryJoin.panchayat_id == panchayat_id,
-                TerritoryJoin.village_id == village_id,
                 Population.id.in_([2, 3]) # 2 = 'male', 3 = 'female'
             ).group_by(
                 TerritoryJoin.block_id,

@@ -12,7 +12,6 @@ class LivestockCensus(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     livestock_id = db.Column(db.Integer, db.ForeignKey('livestocks.id'), nullable=True)
     livestock_count = db.Column(db.Integer, nullable=False)
-    village_code = db.Column(db.Integer, nullable=False)
     block_code = db.Column(db.Integer, nullable=False)
     district_code = db.Column(db.Integer, nullable=False)
     panchayat_code = db.Column(db.Integer, nullable=False)
@@ -23,9 +22,8 @@ class LivestockCensus(db.Model):
     livestock = db.relationship("Livestock", backref=db.backref("livestock_census", lazy="dynamic"))
     territory_join = db.relationship("TerritoryJoin", backref=db.backref("livestock_census", lazy="dynamic"))
 
-    def __init__(self, livestock_count, village_code, panchayat_code,block_code, district_code, livestock_id=None, tj_id=None):
+    def __init__(self, livestock_count, panchayat_code,block_code, district_code, livestock_id=None, tj_id=None):
         self.livestock_count = livestock_count
-        self.village_code = village_code
         self.block_code = block_code
         self.district_code = district_code
         self.panchayat_code = panchayat_code
@@ -34,7 +32,7 @@ class LivestockCensus(db.Model):
 
     def __repr__(self):
         return (f"<LivestockCensus(id={self.id}, livestock_count={self.livestock_count}, "
-                f"village_code={self.village_code}, block_code={self.block_code}, "
+                f"block_code={self.block_code}, "
                 f"district_code={self.district_code}, livestock_id={self.livestock_id}, "
                 f"tj_id={self.tj_id})>")
 
@@ -42,7 +40,6 @@ class LivestockCensus(db.Model):
         return {
             "id": self.id,
             "livestock_count": self.livestock_count,
-            "village_code": self.village_code,
             "block_code": self.block_code,
             "district_code": self.district_code,
             "panchayat_code": self.panchayat_code,
@@ -51,7 +48,7 @@ class LivestockCensus(db.Model):
         }
     
     @classmethod
-    def get_census_data_livestock(cls,village_id,panchayat_id, block_id, district_id):
+    def get_census_data_livestock(cls,panchayat_id, block_id, district_id):
         query = db.session.query(
             func.sum(cls.livestock_count).label('livestock_count'),
             Livestock.livestock_name,
@@ -63,7 +60,6 @@ class LivestockCensus(db.Model):
             TerritoryJoin.block_id == block_id,
             TerritoryJoin.district_id == district_id,
             TerritoryJoin.panchayat_id == panchayat_id,
-            TerritoryJoin.village_id == village_id
         ).group_by(
             TerritoryJoin.block_id,
             TerritoryJoin.district_id,
