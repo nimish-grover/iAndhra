@@ -1,20 +1,18 @@
 
 {% extends 'mobile/base.html' %}
-{% block title %} Select Village {% endblock %}
+{% block title %} Select Panchayat {% endblock %}
 {% from 'mobile/components.html' import select, submit_button %}
 {% block content %}
 
-<h5 class="card-title">Select your Village</h5>
+<h5 class="card-title">Select your Panchayat</h5>
 {{select(id='dd_district', dd_array=districts,label='Select District' )}}
 {{select(id='dd_block', dd_array=[],label='Select Block' )}}  
 {{select(id='dd_panchayat', dd_array=[],label='Select Panchayat' )}}  
-{{select(id='dd_village', dd_array=[],label='Select Village' )}}  
 
 
 {{submit_button()}}
 <input type="hidden" id="block_url" value="{{url_for('.blocks')}}">
 <input type="hidden" id="panchayat_url" value="{{url_for('.panchayats')}}">
-<input type="hidden" id="village_url" value="{{url_for('.villages')}}">
 
 <input type="hidden" id="home_url" value="{{url_for('.index')}}">
 {% endblock %}
@@ -70,11 +68,9 @@
 
         // References to the select elements
         let panchayat_url = document.getElementById('panchayat_url');
-        let village_url = document.getElementById('village_url');
         let block_url = document.getElementById('block_url');
         let home_url = document.getElementById('home_url');
         let dd_panchayats = document.getElementById('dd_panchayat');
-        let dd_villages = document.getElementById('dd_village');
         let dd_districts = document.getElementById('dd_district');
         let dd_blocks = document.getElementById('dd_block');
         let btn_submit = document.getElementById('btn_submit');
@@ -103,26 +99,16 @@
             const block_id = this.value;
             const url = panchayat_url.value; // Replace with actual endpoint
             const payload = { block_id: block_id };
-
             const panchayats = await fetchData(url, payload);
             populateSelect(dd_panchayats, panchayats, 'Select Panchayat');
-            dd_villages.innerHTML = ''; // Clear blocks if state changes
-            dd_villages.appendChild(createOption({'text': 'Select Village', 'value': ''}));
-            dd_villages.setAttribute('disabled','disabled');
         });
         // Event listener for dd_districts
         dd_panchayats.addEventListener('change', async function () {
             const panchayat_id = this.value;
-            const url = village_url.value; // Replace with actual endpoint
             const payload = { panchayat_id: panchayat_id };
-
-            const villages = await fetchData(url, payload);
-            populateSelect(dd_villages, villages, 'Select Village');
+            btn_submit.removeAttribute('disabled');
         });
         
-        dd_villages.addEventListener('change', ()=>{
-            btn_submit.removeAttribute('disabled');
-        })
 
         // submit data
         btn_submit.addEventListener('click', async (event)=>{
@@ -133,15 +119,12 @@
             const block_name = dd_blocks.options[dd_blocks.selectedIndex].text;
             const panchayat_id = dd_panchayats.value;
             const panchayat_name = dd_panchayats.options[dd_panchayats.selectedIndex].text;
-            const village_id = dd_villages.value;
-            const village_name = dd_villages.options[dd_villages.selectedIndex].text;
             const url = home_url.value;
             toggleSpinner();
             payload = {
                 'district_id':district_id, 'district_name':district_name,
                 'block_id': block_id, 'block_name':block_name,
-                'panchayat_id': panchayat_id, 'panchayat_name':panchayat_name,
-                'village_id': village_id, 'village_name':village_name
+                'panchayat_id': panchayat_id, 'panchayat_name':panchayat_name
             }
             const redirect_url = await fetchData(url, payload);
             window.location.href = redirect_url;

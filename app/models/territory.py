@@ -4,7 +4,6 @@ from app.models.states import State
 from app.models.districts import District
 from app.models.blocks import Block
 from app.models.panchayats import Panchayat
-from app.models.villages import Village
 
 class TerritoryJoin(db.Model):
     __tablename__ = 'territory_joins'

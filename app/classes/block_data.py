@@ -27,14 +27,14 @@ from app.models.block_category import BlockCategory
 
 class BlockData:
     @classmethod
-    def get_bt_id(cls,village_id,panchayat_id, block_id, district_id, state_id):
-        bt_id = BlockTerritory.get_bt_id(village_id = int(village_id),panchayat_id=int(panchayat_id),block_id=int(block_id), district_id=int(district_id), state_id=int(state_id))
+    def get_bt_id(cls,panchayat_id, block_id, district_id, state_id):
+        bt_id = BlockTerritory.get_bt_id(panchayat_id=int(panchayat_id),block_id=int(block_id), district_id=int(district_id), state_id=int(state_id))
         if bt_id:
             return bt_id
         else:
-            block_territory = BlockTerritory(state_id=state_id, district_id=district_id, block_id=block_id,village_id=village_id,panchayat_id=panchayat_id)
+            block_territory = BlockTerritory(state_id=state_id, district_id=district_id, block_id=block_id,panchayat_id=panchayat_id)
             block_territory.save_to_db()
-            bt_id = BlockTerritory.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
+            bt_id = BlockTerritory.get_bt_id(panchayat_id,block_id, district_id, state_id)
             return bt_id
         
         
@@ -49,12 +49,12 @@ class BlockData:
         return category_id
     
     @classmethod
-    def get_human_consumption(cls, village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
-        bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
-        return cls.get_or_insert_human(village_id,panchayat_id,block_id, district_id, bt_id, user_id)
+    def get_human_consumption(cls, panchayat_id,block_id, district_id, user_id, state_id=2):
+        bt_id = cls.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        return cls.get_or_insert_human(panchayat_id,block_id, district_id, bt_id, user_id)
     
     # inserted by system
-    def get_or_insert_human(village_id,panchayat_id,block_id, district_id, bt_id, user_id):
+    def get_or_insert_human(panchayat_id,block_id, district_id, bt_id, user_id):
         human = BlockPop.get_by_bt_id(bt_id)
         category_id = BlockData.get_category_id('human')
         if human:
@@ -69,7 +69,7 @@ class BlockData:
                 
             return human
         else:
-            human_consumption = BudgetData.get_human_consumption(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id)
+            human_consumption = BudgetData.get_human_consumption(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id)
             if human_consumption:
                 for item in human_consumption:
                     block_population = BlockPop(
@@ -133,8 +133,8 @@ class BlockData:
         return True
     
     @classmethod
-    def get_dummy_human(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
-        bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_dummy_human(cls, panchayat_id,block_id, district_id, state_id=2):
+        bt_id = cls.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         category_id = BlockCategory.get_category_id('human')
         is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         population = Population.get_all_population()
@@ -147,17 +147,17 @@ class BlockData:
             return population,is_approved
     
     @classmethod
-    def get_livestock_consumption(cls, village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
-        bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
-        return cls.get_or_insert_livestock(village_id,panchayat_id,block_id, district_id, bt_id, user_id)
+    def get_livestock_consumption(cls, panchayat_id,block_id, district_id, user_id, state_id=2):
+        bt_id = cls.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        return cls.get_or_insert_livestock(panchayat_id,block_id, district_id, bt_id, user_id)
     
     # inserted by system
-    def get_or_insert_livestock(village_id,panchayat_id,block_id, district_id, bt_id, user_id):
+    def get_or_insert_livestock(panchayat_id,block_id, district_id, bt_id, user_id):
         livestock = BlockLivestock.get_by_bt_id(bt_id)
         category_id = BlockData.get_category_id('livestock')
 
         if all(row['table_id'] is None for row in livestock):
-            livestock_consumption = BudgetData.get_livestock_consumption(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id)
+            livestock_consumption = BudgetData.get_livestock_consumption(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id)
             if livestock_consumption:
                 for item in livestock_consumption:
                     block_livestock = BlockLivestock(
@@ -228,8 +228,8 @@ class BlockData:
         return True
     
     @classmethod 
-    def get_dummy_livestock(cls,village_id,panchayat_id,block_id,district_id,state_id=2):
-        bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_dummy_livestock(cls,panchayat_id,block_id,district_id,state_id=2):
+        bt_id = cls.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         category_id = BlockCategory.get_category_id('livestock')
         is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         livestocks = Livestock.get_all_livestocks()
@@ -242,16 +242,16 @@ class BlockData:
             return livestocks,is_approved
 
     @classmethod
-    def get_crops_consumption(cls,village_id,panchayat_id, block_id, district_id, user_id, state_id=2):
-        bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
-        return cls.get_or_insert_crops(village_id,panchayat_id,block_id, district_id, bt_id, user_id)
+    def get_crops_consumption(cls,panchayat_id, block_id, district_id, user_id, state_id=2):
+        bt_id = cls.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        return cls.get_or_insert_crops(panchayat_id,block_id, district_id, bt_id, user_id)
     
-    def get_or_insert_crops(village_id,panchayat_id,block_id, district_id, bt_id, user_id):
+    def get_or_insert_crops(panchayat_id,block_id, district_id, bt_id, user_id):
         crops = BlockCrop.get_by_bt_id(bt_id)
         category_id = BlockData.get_category_id('crop')
 
         if all(row['table_id'] is None for row in crops):
-            crops_consumption = BudgetData.get_crops_consumption(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id)
+            crops_consumption = BudgetData.get_crops_consumption(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id)
             if crops_consumption:
                 for item in crops_consumption:
                     block_crops = BlockCrop(
@@ -320,8 +320,8 @@ class BlockData:
         return True
 
     @classmethod
-    def get_dummy_crops(cls,village_id,panchayat_id,block_id,district_id,state_id=2):
-        bt_id = BlockTerritory.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
+    def get_dummy_crops(cls,panchayat_id,block_id,district_id,state_id=2):
+        bt_id = BlockTerritory.get_bt_id(panchayat_id,block_id, district_id, state_id)
         category_id = BlockCategory.get_category_id('crop')
         is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         crops = Crop.get_all_crops()
@@ -334,11 +334,11 @@ class BlockData:
             return crops,is_approved
     
     @classmethod
-    def get_block_industries(cls, village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
-        bt_id = BlockTerritory.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
-        return cls.get_industries(village_id,panchayat_id,block_id, district_id, bt_id, user_id)
+    def get_block_industries(cls, panchayat_id,block_id, district_id, user_id, state_id=2):
+        bt_id = BlockTerritory.get_bt_id(panchayat_id,block_id, district_id, state_id)
+        return cls.get_industries(panchayat_id,block_id, district_id, bt_id, user_id)
 
-    def get_industries(village_id,panchayat_id,block_id, district_id, bt_id, user_id):
+    def get_industries(panchayat_id,block_id, district_id, bt_id, user_id):
         industries = BlockIndustry.get_by_bt_id(bt_id=bt_id)
         # results =[{'id': item.id, 'category':item.industry_sector } for item in industries]
         category_id = BlockData.get_category_id('industry')
@@ -405,15 +405,15 @@ class BlockData:
             return True
 
     @classmethod
-    def get_surface_supply(cls, village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
-        bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
-        return cls.get_or_insert_surface_supply(village_id,panchayat_id,block_id, district_id, bt_id, user_id)
+    def get_surface_supply(cls, panchayat_id,block_id, district_id, user_id, state_id=2):
+        bt_id = cls.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        return cls.get_or_insert_surface_supply(panchayat_id,block_id, district_id, bt_id, user_id)
     
-    def get_or_insert_surface_supply(village_id,panchayat_id,block_id, district_id, bt_id, user_id):
+    def get_or_insert_surface_supply(panchayat_id,block_id, district_id, bt_id, user_id):
         waterbodies = BlockWaterbody.get_by_bt_id(bt_id)
         category_id = BlockCategory.get_category_id('surface')
         if all(row['table_id'] is None for row in waterbodies):            
-            surface_supply = BudgetData.get_surface_supply(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id)
+            surface_supply = BudgetData.get_surface_supply(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id)
             if surface_supply:
                 for item in surface_supply:
                     block_surface = BlockWaterbody(
@@ -487,8 +487,8 @@ class BlockData:
         return True
     
     @classmethod
-    def get_dummy_surface(cls,village_id,panchayat_id,block_id, district_id, state_id=2):
-        bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_dummy_surface(cls,panchayat_id,block_id, district_id, state_id=2):
+        bt_id = cls.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         category_id = BlockCategory.get_category_id('surface')
         is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         surface = WaterbodyType.get_all_waterbodies()
@@ -503,11 +503,11 @@ class BlockData:
         
         
     @classmethod
-    def get_groundwater_supply(cls, village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
-        bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
-        return cls.get_or_insert_groundwater_supply(village_id,panchayat_id,block_id, district_id, bt_id, user_id)
+    def get_groundwater_supply(cls, panchayat_id,block_id, district_id, user_id, state_id=2):
+        bt_id = cls.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        return cls.get_or_insert_groundwater_supply(panchayat_id,block_id, district_id, bt_id, user_id)
     
-    def get_or_insert_groundwater_supply(village_id,panchayat_id,block_id, district_id, bt_id, user_id):
+    def get_or_insert_groundwater_supply(panchayat_id,block_id, district_id, bt_id, user_id):
         groundwater_supply = BlockGround.get_by_bt_id(bt_id)
         category_id = BlockCategory.get_category_id('groundwater')
         if groundwater_supply:
@@ -521,7 +521,7 @@ class BlockData:
                     block_progress.save_to_db()
             return groundwater_supply
         else: 
-            groundwater_data = BudgetData.get_ground_supply(village_id,panchayat_id,block_id, district_id)
+            groundwater_data = BudgetData.get_ground_supply(panchayat_id,block_id, district_id)
             for item in groundwater_data:
                 item = SimpleNamespace(**item)
                 if item.name.lower() == 'extraction':
@@ -563,23 +563,23 @@ class BlockData:
         return True
     
     @classmethod
-    def get_dummy_groundwater(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
-        bt_id = cls.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_dummy_groundwater(cls, panchayat_id,block_id, district_id, state_id=2):
+        bt_id = cls.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         category_id = BlockCategory.get_category_id('groundwater')
         is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         ground_supply = [{'extraction':0,'bt_id':bt_id,'table_id':0,'id':1},]
         return ground_supply,is_approved
     
     @classmethod
-    def get_rainfall_data(cls,village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
-        bt_id = BlockTerritory.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
-        return cls.get_or_insert_rainfall_data(village_id,panchayat_id,block_id, district_id, bt_id, user_id)
+    def get_rainfall_data(cls,panchayat_id,block_id, district_id, user_id, state_id=2):
+        bt_id = BlockTerritory.get_bt_id(panchayat_id,block_id, district_id, state_id)
+        return cls.get_or_insert_rainfall_data(panchayat_id,block_id, district_id, bt_id, user_id)
     
-    def get_or_insert_rainfall_data(village_id,panchayat_id,block_id, district_id, bt_id, user_id):
+    def get_or_insert_rainfall_data(panchayat_id,block_id, district_id, bt_id, user_id):
         rainfall = BlockRainfall.get_by_bt_id(bt_id)
         category_id = BlockCategory.get_category_id('rainfall')
         if not rainfall:            
-            rainfall_supply = BudgetData.get_rainfall(village_id,panchayat_id,block_id, district_id)
+            rainfall_supply = BudgetData.get_rainfall(panchayat_id,block_id, district_id)
             if rainfall_supply:
                 for item in rainfall_supply:
                     block_rainfall = BlockRainfall(normal=item['normal'],
@@ -643,15 +643,15 @@ class BlockData:
         return True
     
     @classmethod
-    def get_lulc_supply(cls,village_id,panchayat_id, block_id, district_id, user_id, state_id=2):
-        bt_id = BlockTerritory.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
-        return cls.get_or_insert_lulc(village_id,panchayat_id,block_id, district_id, bt_id, user_id)
+    def get_lulc_supply(cls,panchayat_id, block_id, district_id, user_id, state_id=2):
+        bt_id = BlockTerritory.get_bt_id(panchayat_id,block_id, district_id, state_id)
+        return cls.get_or_insert_lulc(panchayat_id,block_id, district_id, bt_id, user_id)
 
-    def get_or_insert_lulc(village_id,panchayat_id,block_id, district_id, bt_id, user_id):
+    def get_or_insert_lulc(panchayat_id,block_id, district_id, bt_id, user_id):
         lulc = BlockLULC.get_by_bt_id(bt_id)
         category_id = BlockCategory.get_category_id('lulc')
         if all(row['table_id'] is None for row in lulc):
-            lulc_supply = LULCCensus.get_lulc(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id)
+            lulc_supply = LULCCensus.get_lulc(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id)
             if lulc_supply:
                 for item in lulc_supply:
                     if item['lulc_area']>0:
@@ -721,8 +721,8 @@ class BlockData:
         return True
     
     @classmethod
-    def get_dummy_lulc(cls,village_id,panchayat_id,block_id,district_id,state_id=2):
-        bt_id = BlockTerritory.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
+    def get_dummy_lulc(cls,panchayat_id,block_id,district_id,state_id=2):
+        bt_id = BlockTerritory.get_bt_id(panchayat_id,block_id, district_id, state_id)
         category_id = BlockCategory.get_category_id('lulc')
         is_approved = BlockProgress.get_progress_check(bt_id,category_id)
         lulc = LULC.get_all_lulc()
@@ -736,11 +736,11 @@ class BlockData:
 
     
     @classmethod
-    def get_water_transfer(cls, village_id,panchayat_id,block_id, district_id, user_id, state_id=2):
-        bt_id = BlockTerritory.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
-        return cls.get_or_insert_water_transfer(village_id,panchayat_id,block_id, district_id, bt_id, user_id)
+    def get_water_transfer(cls, panchayat_id,block_id, district_id, user_id, state_id=2):
+        bt_id = BlockTerritory.get_bt_id(panchayat_id,block_id, district_id, state_id)
+        return cls.get_or_insert_water_transfer(panchayat_id,block_id, district_id, bt_id, user_id)
     
-    def get_or_insert_water_transfer(village_id,panchayat_id,block_id, district_id, bt_id, user_id):
+    def get_or_insert_water_transfer(panchayat_id,block_id, district_id, bt_id, user_id):
         water_transfer = BlockWaterTransfer.get_by_bt_id(bt_id)
         category_id = BlockData.get_category_id('transfer')
 
@@ -798,8 +798,8 @@ class BlockData:
         return True
     
     @classmethod
-    def get_progress_status(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
-        bt_id = cls.get_bt_id(village_id,panchayat_id,block_id, district_id, state_id)
+    def get_progress_status(cls, panchayat_id,block_id, district_id, state_id=2):
+        bt_id = cls.get_bt_id(panchayat_id,block_id, district_id, state_id)
         status = BlockProgress.get_status_by_bt_id(bt_id)
         categories = ['Human', 'Livestocks', 'Crops',  'Industry', 'Surface', 'Groundwater', 'Rainfall', 'LULC', 'Water Transfer']
         category_urls = ['human', 'livestocks', 'crops', 'industries', 'surface', 'ground', 'rainfall', 'lulc',  'transfer']

@@ -18,6 +18,7 @@ def register():
         district_id = request.form.get('dd_districts')
         block_id = request.form.get('dd_blocks')
         panchayat_id = request.form.get('dd_panchayats')
+        panchayat_arr = [int(item) for item in panchayat_id.split(',')]
         user = User.find_by_username(username.lower())
         if user:
             flash('username already exists!')
@@ -27,7 +28,7 @@ def register():
             flash('Passwords do not match!')
             return redirect(url_for('auth.register'))
 
-        user = User(username.lower(),password,district_id,block_id,panchayat_id,False,False)
+        user = User(username.lower(),password,district_id,block_id,panchayat_arr,False,False)
         user.set_password(password)
         user.save_to_db()
 
@@ -113,7 +114,7 @@ def reset_password():
                 json_data = request.json
                 user = User.query.filter_by(id=json_data['id']).first()
                 if user and user.isActive:
-                    reset_pwd = user.username + '_123'
+                    reset_pwd = user.username[:4] + '_123'
                     user.set_password(reset_pwd)
                     user.update_db()
                     flash('Password reset successfully! Please login with new password!')

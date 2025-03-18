@@ -5,7 +5,6 @@ from app.models.block_territory import BlockTerritory
 from app.models.blocks import Block
 from app.models.districts import District
 from app.models.panchayats import Panchayat
-from app.models.villages import Village
 from app.models.lulc import LULC
 from app.models.territory import TerritoryJoin
 
@@ -38,7 +37,7 @@ class LULCCensus(db.Model):
         }
     
     @classmethod
-    def get_census_data_lulc(cls, village_id,panchayat_id,block_id, district_id):
+    def get_census_data_lulc(cls,panchayat_id,block_id, district_id):
         query = db.session.query(
                 func.sum(cls.lulc_area).label('catchment_area'),
                 LULC.catchment,
@@ -47,12 +46,10 @@ class LULCCensus(db.Model):
                 ).join(Block, Block.id == TerritoryJoin.block_id
                 ).join(District, District.id==TerritoryJoin.district_id
                 ).join(Panchayat, Panchayat.id==TerritoryJoin.panchayat_id
-                ).join(Village, Village.id==TerritoryJoin.village_id
                 ).filter(
                     Block.id == block_id, 
                     District.id == district_id,
                     Panchayat.id == panchayat_id,
-                    Village.id == village_id
                 ).group_by(LULC.catchment)
         
         results = query.all()
@@ -109,7 +106,7 @@ class LULCCensus(db.Model):
         return None
     
     @classmethod 
-    def get_lulc(cls,village_id,panchayat_id,block_id,district_id):
+    def get_lulc(cls,panchayat_id,block_id,district_id):
         query = db.session.query(
             func.round(func.sum(LULCCensus.lulc_area).cast(Numeric), 2).label('lulc_area'),
             LULC.id,
@@ -119,8 +116,7 @@ class LULCCensus(db.Model):
         ).join(Block, Block.id == TerritoryJoin.block_id
         ).join(District, District.id == TerritoryJoin.district_id
         ).join(Panchayat,Panchayat.id == TerritoryJoin.panchayat_id
-        ).join(Village, Village.id == TerritoryJoin.village_id
-        ).filter(Block.id == block_id, District.id == district_id,Panchayat.id == panchayat_id, Village.id == village_id
+        ).filter(Block.id == block_id, District.id == district_id,Panchayat.id == panchayat_id
         ).group_by(LULC.id)
         
         results = query.all()

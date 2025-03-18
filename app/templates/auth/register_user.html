@@ -1,4 +1,33 @@
 {% extends 'auth/base.html' %} 
+{% block css %} 
+<style>
+    .dropdown-menu {
+        padding: 10px;
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .dropdown-item:active {
+        background-color: transparent;
+    }
+    .dropdown-item.disabled {
+        color: #aaa;
+        pointer-events: none;
+    }
+    .checkbox-select {
+        position: relative;
+    }
+    .checkbox-select-input {
+        display: none;
+    }
+    .selected-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+{%endblock%}
+
 {% block title %} Register {% endblock %}
 {% from 'mobile/components.html' import input_text, floating_input, select %}
 {% block content %}
@@ -11,8 +40,37 @@
             {{select(id='dd_blocks', dd_array=blocks, label='Select Block')}}
         </div>
         <div class="mb-3">
-            {{select(id='dd_panchayats', dd_array=panchayats, label='Select Panchayat')}}
+            <div class="checkbox-select">
+                <!-- Dropdown Button -->
+                <button class="form-select text-start selected-text text-truncate" 
+                        type="button" 
+                        id="panchayat_dropdown" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
+                        disabled>
+                    --Select Panchayat--
+                </button>
+        
+                <!-- Dropdown List -->
+                <div class="dropdown-menu w-100" id="panchayat_options" aria-labelledby="panchayat_dropdown">
+                    <div class="row">
+                        <div class="col justify-self-start text-center">
+                            <div class="dropdown-item text-primary fw-bold fs-7" id="selectAllPanchayats">✔ Select All</div>
+                        </div>
+                        <div class="col justify-self-end text-center">
+                            <div class="dropdown-item text-danger fw-bold fs-7" id="deselectAllPanchayats">✖ Deselect All</div>
+                        </div>
+                    </div>
+                    <!-- Select All & Deselect All inside the dropdown -->
+                    <div class="dropdown-divider"></div> 
+                    <!-- Panchayat options will be dynamically added here -->
+                </div>
+        
+                <!-- Hidden input to store selected values -->
+                <input type="hidden" id="dd_panchayats" name="dd_panchayats" value="">
+            </div>
         </div>
+        
         <div class="mb-3">
             {{floating_input(label='Username (email)', placeholder='example@email.com', input_id='username', 
             pattern="^[a-zA-Z0-9\+_.-]+@[a-zA-Z0-9.-]+$", error_message='Username must be an email ID')}}
@@ -32,6 +90,7 @@
         <a class="text-body-secondary link-underline link-underline-opacity-0 float-end me-2 fs-7" 
         href="{{url_for('auth.login')}}">Login</a>
     </form>
+
 <input type="hidden" id="block_url" value="{{url_for('mobile.blocks')}}">
 <input type="hidden" id="panchayat_url" value="{{url_for('mobile.panchayats')}}">
 {% endblock %}
@@ -82,53 +141,173 @@
             const option = document.createElement('option');
             option.textContent = params.text;
             option.value = params.value;
-            return option
+            return option;
         }
+
+function populatePanchayatDropdown(data) {
+    const dropdown = document.getElementById('panchayat_options');
+    dropdown.innerHTML = ''; // Clear existing options
+
+    // Add Select All & Deselect All inside the dropdown
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'row';
+
+    const selectAllCol = document.createElement('div');
+    selectAllCol.className = 'col text-center';
+    const selectAllOption = document.createElement('div');
+    selectAllOption.className = 'dropdown-item text-primary fw-bold fs-7';
+    selectAllOption.id = 'selectAllPanchayats';
+    selectAllOption.textContent = '✔ Select All';
+    selectAllCol.appendChild(selectAllOption);
+
+    const deselectAllCol = document.createElement('div');
+    deselectAllCol.className = 'col text-center';
+    const deselectAllOption = document.createElement('div');
+    deselectAllOption.className = 'dropdown-item text-danger fw-bold fs-7';
+    deselectAllOption.id = 'deselectAllPanchayats';
+    deselectAllOption.textContent = '✖ Deselect All';
+    deselectAllCol.appendChild(deselectAllOption);
+
+    rowDiv.appendChild(selectAllCol);
+    rowDiv.appendChild(deselectAllCol);
+    dropdown.appendChild(rowDiv);
+
+    // Divider
+    const divider = document.createElement('div');
+    divider.className = 'dropdown-divider';
+    dropdown.appendChild(divider);
+
+    // Add each panchayat as a checkbox option
+    data.forEach(panchayat => {
+        const item = document.createElement('div');
+        item.className = panchayat.disabled ? 'dropdown-item disabled' : 'dropdown-item';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'panchayat-checkbox me-2';
+        checkbox.id = 'panchayat_' + panchayat.id;
+        checkbox.value = panchayat.id;
+        checkbox.dataset.name = panchayat.name;
+        if (panchayat.disabled) {
+            checkbox.disabled = true;
+            checkbox.checked = true;
+        }
+
+        const label = document.createElement('label');
+        label.htmlFor = 'panchayat_' + panchayat.id;
+        label.textContent = panchayat.name;
+
+        item.appendChild(checkbox);
+        item.appendChild(label);
+        dropdown.appendChild(item);
+
+        // Add click event for the whole item (except when clicking directly on checkbox)
+        item.addEventListener('click', function(e) {
+            if (!panchayat.disabled && e.target !== checkbox) {
+                checkbox.checked = !checkbox.checked;
+                updatePanchayatSelection();
+            }
+            e.stopPropagation(); // Prevent dropdown from closing
+        });
+
+        // Add change event for the checkbox
+        checkbox.addEventListener('change', function(e) {
+            updatePanchayatSelection();
+            e.stopPropagation(); // Prevent dropdown from closing
+        });
+    });
+
+    // Prevent dropdown from closing when clicking inside
+    dropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+
+    // Attach event listeners for "Select All" and "Deselect All"
+    document.getElementById('selectAllPanchayats').addEventListener('click', function() {
+        document.querySelectorAll('.panchayat-checkbox:not(:disabled)').forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        updatePanchayatSelection();
+    });
+
+    document.getElementById('deselectAllPanchayats').addEventListener('click', function() {
+        document.querySelectorAll('.panchayat-checkbox:not(:disabled)').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updatePanchayatSelection();
+    });
+}
+
+// Function to update selection text and hidden input value
+function updatePanchayatSelection() {
+    const checkboxes = document.querySelectorAll('.panchayat-checkbox:checked');
+    const dropdownButton = document.getElementById('panchayat_dropdown');
+    const hiddenInput = document.getElementById('dd_panchayats');
+
+    const selectedIds = [];
+    const selectedNames = [];
+
+    checkboxes.forEach(checkbox => {
+        if (!checkbox.disabled) {
+            selectedIds.push(checkbox.value);
+            selectedNames.push(checkbox.dataset.name);
+        }
+    });
+
+    // Update hidden input with comma-separated IDs
+    hiddenInput.value = selectedIds.join(',');
+
+    // Update dropdown button text
+    if (selectedNames.length > 0) {
+        dropdownButton.textContent = selectedNames.join(', ');
+    } else {
+        dropdownButton.textContent = '--Select Panchayat--';
+    }
+}
+
+
 
         // References to the select elements
         let panchayat_url = document.getElementById('panchayat_url');
         let block_url = document.getElementById('block_url');
-        let dd_panchayats = document.getElementById('dd_panchayats');
         let dd_districts = document.getElementById('dd_districts');
         let dd_blocks = document.getElementById('dd_blocks');
     
         // Enable dropdown state on page load
-        dd_districts.removeAttribute('disabled','disabled');
+        dd_districts.removeAttribute('disabled');
 
-        // Event listener for dd_states
+        // Event listener for districts dropdown
         dd_districts.addEventListener('change', async function () {
             const district_id = this.value;
-            const url = block_url.value; // Replace with actual endpoint
+            const url = block_url.value;
             const payload = { district_id: district_id };
 
             const blocks = await fetchData(url, payload);
             populateSelect(dd_blocks, blocks, 'Select Block');
-            dd_panchayats.innerHTML = ''; // Clear blocks if state changes
-            dd_panchayats.appendChild(createOption({'text': 'Select Panchayat', 'value': ''}));
-            dd_panchayats.setAttribute('disabled','disabled');
+            
+            // Reset and disable panchayat dropdown
+            document.getElementById('panchayat_dropdown').textContent = '--Select Panchayat--';
+            document.getElementById('panchayat_dropdown').disabled = true;
+            document.getElementById('dd_panchayats').value = '';
+            document.getElementById('panchayat_options').innerHTML = '';
         });
 
-        // Event listener for dd_districts
+        // Event listener for blocks dropdown
         dd_blocks.addEventListener('change', async function () {
             const block_id = this.value;
-            const url = panchayat_url.value; // Replace with actual endpoint
+            const url = panchayat_url.value;
             const payload = { block_id: block_id };
 
             const panchayats = await fetchData(url, payload);
-            populateSelect(dd_panchayats, panchayats, 'Select Panchayat');
+            document.getElementById('panchayat_dropdown').disabled = false;
+
+            populatePanchayatDropdown(panchayats);
         });
-        // Event listener for dd_districts
-        dd_panchayats.addEventListener('change', async function () {
-            const panchayat_id = this.value;
-            const payload = { panchayat_id: panchayat_id };
-        });
-        
     });
 </script>
 <script>
     const form = document.getElementsByTagName('form')[0];
     const requiredFields = form.querySelectorAll("input[required]");
-    const selectState = document.getElementById('selectState');
     const confirmPassword = document.getElementById('confirmPassword');
     const password = document.getElementById('password');
     const btnSubmit = document.getElementById('btnSubmit');
@@ -151,62 +330,60 @@
     });
 
     confirmPassword.addEventListener('input', function(){
-            if(password.value != confirmPassword.value){
-                error_message(confirmPassword);
-                confirmPassword.nextElementSibling.textContent = 'Passwords must match';
-                toggleButton(false);
-            } else {
-                success_message(confirmPassword);
-                toggleButton(true);
-            }
-        });
-    
-        function toggleButton(enable){
-            if (enable){
-                // enable btnSubmit
-                if (btnSubmit.disabled) {
-                    btnSubmit.removeAttribute('disabled');
-                } 
-            } else {
-                // disable btnSubmit
-                if (btnSubmit.disabled) {
-                    btnSubmit.removeAttribute('disabled');
-                }
-                btnSubmit.setAttribute('disabled', 'disabled')
-            }             
+        if(password.value != confirmPassword.value){
+            error_message(confirmPassword);
+            confirmPassword.nextElementSibling.textContent = 'Passwords must match';
+            toggleButton(false);
+        } else {
+            success_message(confirmPassword);
+            toggleButton(true);
         }
+    });
 
-        function error_message(input) {
-            if (input.nextElementSibling.classList.contains('valid-feedback')) {
-                input.nextElementSibling.classList.remove('valid-feedback');
+    function toggleButton(enable){
+        if (enable){
+            // enable btnSubmit
+            if (btnSubmit.disabled) {
+                btnSubmit.removeAttribute('disabled');
+            } 
+        } else {
+            // disable btnSubmit
+            if (btnSubmit.disabled) {
+                btnSubmit.removeAttribute('disabled');
             }
-            if (input.classList.contains('is-valid')) {
-                input.classList.add('is-valid');
-            }
-            if (!input.nextElementSibling.classList.contains('invalid-feedback')) {
-                input.nextElementSibling.classList.add('invalid-feedback');
-            }
-            if (!input.classList.contains('is-invalid')) {
-                input.classList.add('is-invalid');
-            }
+            btnSubmit.setAttribute('disabled', 'disabled')
+        }             
+    }
+
+    function error_message(input) {
+        if (input.nextElementSibling.classList.contains('valid-feedback')) {
+            input.nextElementSibling.classList.remove('valid-feedback');
         }
-
-        function success_message(input) {
-            if (input.nextElementSibling.classList.contains('invalid-feedback')) {
-                input.nextElementSibling.classList.remove('invalid-feedback');
-            }
-            if (input.classList.contains('is-invalid')) {
-                input.classList.remove('is-invalid');
-            }
-            if (!input.nextElementSibling.classList.contains('valid-feedback')) {
-                input.nextElementSibling.classList.add('valid-feedback');
-            }
-            if (!input.classList.contains('is-valid')) {
-                input.classList.add('is-valid');
-            }
-            input.nextElementSibling.textContent = 'Looks fine!';
+        if (input.classList.contains('is-valid')) {
+            input.classList.add('is-valid');
         }
+        if (!input.nextElementSibling.classList.contains('invalid-feedback')) {
+            input.nextElementSibling.classList.add('invalid-feedback');
+        }
+        if (!input.classList.contains('is-invalid')) {
+            input.classList.add('is-invalid');
+        }
+    }
 
+    function success_message(input) {
+        if (input.nextElementSibling.classList.contains('invalid-feedback')) {
+            input.nextElementSibling.classList.remove('invalid-feedback');
+        }
+        if (input.classList.contains('is-invalid')) {
+            input.classList.remove('is-invalid');
+        }
+        if (!input.nextElementSibling.classList.contains('valid-feedback')) {
+            input.nextElementSibling.classList.add('valid-feedback');
+        }
+        if (!input.classList.contains('is-valid')) {
+            input.classList.add('is-valid');
+        }
+        input.nextElementSibling.textContent = 'Looks fine!';
+    }
 </script>
-
 {% endblock %}

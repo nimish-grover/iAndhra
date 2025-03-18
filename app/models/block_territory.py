@@ -29,8 +29,8 @@ class BlockTerritory(db.Model):
     state = db.relationship('State', backref=db.backref('block_territory', lazy='dynamic'))
     district = db.relationship('District', backref=db.backref('block_territory', lazy='dynamic'))
     block = db.relationship('Block', backref=db.backref('block_territory', lazy='dynamic'))
-    # panchayat = db.relationship('Panchayat', backref=db.backref('block_territory', lazy='dynamic'))
-    village = db.relationship('Village', backref=db.backref('block_territory', lazy='dynamic'))
+    panchayat = db.relationship('Panchayat', backref=db.backref('block_territory', lazy='dynamic'))
+    # village = db.relationship('Village', backref=db.backref('block_territory', lazy='dynamic'))
     
     def __init__(self,state_id,district_id, block_id,panchayat_id,is_approved=False):
         self.state_id = state_id

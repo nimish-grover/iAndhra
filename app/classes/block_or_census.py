@@ -33,9 +33,9 @@ class BlockOrCensus:
         return value/cls.CUM_TO_HAM
 
     @classmethod
-    def get_human_data(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
+    def get_human_data(cls, panchayat_id,block_id, district_id, state_id=2):
         #return block data
-        bt_id = BlockData.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        bt_id = BlockData.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         if bt_id:
             human = BlockPop.get_block_population_data(bt_id)
             if human: 
@@ -52,12 +52,12 @@ class BlockOrCensus:
                 if is_approved:
                     return human_consumption, is_approved           
             # else return budget data
-        human_consumption = BudgetData.get_human_consumption(village_id,panchayat_id,block_id, district_id)
+        human_consumption = BudgetData.get_human_consumption(panchayat_id,block_id, district_id)
         return human_consumption, False
     
     @classmethod
-    def get_livestock_data(cls,village_id,panchayat_id, block_id, district_id, state_id=2):
-        bt_id = BlockData.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_livestock_data(cls,panchayat_id, block_id, district_id, state_id=2):
+        bt_id = BlockData.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         if bt_id:
             livestocks = BlockLivestock.get_block_livestock_data(bt_id)
             if livestocks:
@@ -72,12 +72,12 @@ class BlockOrCensus:
                 livestock_consumption = cls.get_entity_consumption(livestocks, cls.COLORS)
                 if is_approved:
                     return livestock_consumption, is_approved   
-        livestock_consumption = BudgetData.get_livestock_consumption(village_id,panchayat_id,block_id, district_id)
+        livestock_consumption = BudgetData.get_livestock_consumption(panchayat_id,block_id, district_id)
         return livestock_consumption, False
     
     @classmethod
-    def get_crop_data(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
-        bt_id = BlockData.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_crop_data(cls, panchayat_id,block_id, district_id, state_id=2):
+        bt_id = BlockData.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         if bt_id:
             crops = BlockCrop.get_block_crop_data(bt_id)
             if crops:
@@ -91,12 +91,12 @@ class BlockOrCensus:
                 crop_consumption = cls.get_entity_consumption(crops, cls.COLORS)
                 if is_approved:
                     return crop_consumption, is_approved 
-        crop_consumption = BudgetData.get_crops_consumption(village_id,panchayat_id,block_id, district_id)
+        crop_consumption = BudgetData.get_crops_consumption(panchayat_id,block_id, district_id)
         return crop_consumption, False
 
     @classmethod
-    def get_industry_data(cls, village_id,panchayat_id,block_id, district_id, state_id=2):
-        bt_id = BlockData.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_industry_data(cls, panchayat_id,block_id, district_id, state_id=2):
+        bt_id = BlockData.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         if bt_id:
             industries = BlockIndustry.get_block_industry_data(bt_id)
             if industries:       
@@ -111,8 +111,8 @@ class BlockOrCensus:
         return industry_consumption, False
     
     @classmethod
-    def get_surface_data(cls,village_id,panchayat_id, block_id, district_id, state_id=2):
-        bt_id = BlockData.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_surface_data(cls,panchayat_id, block_id, district_id, state_id=2):
+        bt_id = BlockData.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         if bt_id:
             surface_water = BlockWaterbody.get_block_waterbody_data(bt_id)
             if surface_water:
@@ -123,13 +123,13 @@ class BlockOrCensus:
                 surface_water_supply = cls.get_entity_consumption(surface_water, cls.COLORS)
                 if is_approved:
                     return surface_water_supply, is_approved
-        surface_water_supply = BudgetData.get_surface_supply(village_id,panchayat_id,block_id, district_id)
+        surface_water_supply = BudgetData.get_surface_supply(panchayat_id,block_id, district_id)
         return surface_water_supply, False
 
     @classmethod
-    def get_ground_data(cls,village_id,panchayat_id, block_id, district_id, state_id=2):
-        bt_id = BlockData.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
-        ground_water_supply = BudgetData.get_ground_supply(village_id,panchayat_id,block_id, district_id)
+    def get_ground_data(cls,panchayat_id, block_id, district_id, state_id=2):
+        bt_id = BlockData.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+        ground_water_supply = BudgetData.get_ground_supply(panchayat_id,block_id, district_id)
         if bt_id:
             ground_water = BlockGround.get_block_groundwater_data(bt_id)
             if ground_water:
@@ -160,8 +160,8 @@ class BlockOrCensus:
         return ground_water_supply, False
     
     @classmethod
-    def get_runoff_data(cls,village_id,panchayat_id, block_id, district_id, state_id=2):  
-        bt_id = BlockData.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_runoff_data(cls,panchayat_id, block_id, district_id, state_id=2):  
+        bt_id = BlockData.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         rainfall_data = BlockRainfall.get_rainfall_data(bt_id)
         if rainfall_data:
             rainfall_in_mm = float(sum(item['actual'] for item in rainfall_data))
@@ -187,12 +187,12 @@ class BlockOrCensus:
                     runoff = [{**item, 'background': bg} for item, bg in zip(runoff_array, bg_colors)]
                     if is_approved:
                         return runoff, is_approved
-        runoff = BudgetData.get_runoff(village_id,panchayat_id,block_id, district_id)
+        runoff = BudgetData.get_runoff(panchayat_id,block_id, district_id)
         return runoff, False
     
     @classmethod
-    def get_rainfall_data(cls,village_id,panchayat_id, block_id, district_id, state_id=2):
-        bt_id = BlockData.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_rainfall_data(cls,panchayat_id, block_id, district_id, state_id=2):
+        bt_id = BlockData.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         if bt_id:
             rainfall = BlockRainfall.get_rainfall_data(bt_id)
             if rainfall:
@@ -202,26 +202,26 @@ class BlockOrCensus:
                 )
                 if is_approved:
                     return rainfall, is_approved
-        rainfall_data = BudgetData.get_rainfall(village_id,panchayat_id,block_id, district_id)
+        rainfall_data = BudgetData.get_rainfall(panchayat_id,block_id, district_id)
         return rainfall_data, False
     
     @classmethod
-    def get_demand_side_data(cls,village_id,panchayat_id, block_id, district_id, state_id=2):
+    def get_demand_side_data(cls,panchayat_id, block_id, district_id, state_id=2):
         demand_side = []
         total_human = 0
         total_crop = 0
         total_livestock = 0
         total_industry = 0
-        human,is_approved = cls.get_human_data(village_id,panchayat_id,block_id, district_id,state_id)
+        human,is_approved = cls.get_human_data(panchayat_id,block_id, district_id,state_id)
         if human:
             total_human = round(sum([float(item['value']) for item in human]), 2)
-        livestocks,is_approved = cls.get_livestock_data(village_id,panchayat_id,block_id, district_id,state_id)
+        livestocks,is_approved = cls.get_livestock_data(panchayat_id,block_id, district_id,state_id)
         if livestocks:
             total_livestock = round(sum([item['value']for item in livestocks]),2)
-        crops,is_approved = cls.get_crop_data(village_id,panchayat_id,block_id, district_id,state_id)
+        crops,is_approved = cls.get_crop_data(panchayat_id,block_id, district_id,state_id)
         if crops:
             total_crop = round(sum([item['value'] for item in crops]),2)
-        industry = BudgetData.get_industry_demand(village_id,panchayat_id,block_id, district_id,state_id)
+        industry = BudgetData.get_industry_demand(panchayat_id,block_id, district_id,state_id)
         if industry:
             total_industry = round(sum([float(item['value']) for item in industry]), 2)
         total_demand = total_human + total_livestock + total_crop + total_industry
@@ -234,18 +234,18 @@ class BlockOrCensus:
         return demand_with_colors
 
     @classmethod
-    def get_supply_side_data(cls,village_id,panchayat_id,block_id, district_id, state_id=2):
+    def get_supply_side_data(cls,panchayat_id,block_id, district_id, state_id=2):
         supply_side = []
         total_surface = 0
         total_ground = 0
         total_transfer = 0 
-        surface,is_approved = cls.get_surface_data(village_id,panchayat_id,block_id, district_id,state_id)
+        surface,is_approved = cls.get_surface_data(panchayat_id,block_id, district_id,state_id)
         if surface:
             total_surface = sum([item['value'] for item in surface])
-        ground,is_approved = cls.get_ground_data(village_id,panchayat_id,block_id, district_id,state_id)
+        ground,is_approved = cls.get_ground_data(panchayat_id,block_id, district_id,state_id)
         if ground:
             total_ground = [item['value'] for item in ground if item['name'] == 'extraction'][0]
-        transfer = BudgetData.get_water_transfer(village_id,panchayat_id,block_id, district_id,state_id)
+        transfer = BudgetData.get_water_transfer(panchayat_id,block_id, district_id,state_id)
         if transfer:
             total_transfer = sum([item['entity_value'] for item in transfer])
         positive_transfer = 0
@@ -260,11 +260,11 @@ class BlockOrCensus:
         return supply_with_colors
     
     @classmethod
-    def get_water_budget_data(cls,village_id,panchayat_id, block_id, district_id, state_id=2):
+    def get_water_budget_data(cls,panchayat_id, block_id, district_id, state_id=2):
         water_budget = []
-        demand_side = cls.get_demand_side_data(village_id,panchayat_id,block_id, district_id,state_id)
+        demand_side = cls.get_demand_side_data(panchayat_id,block_id, district_id,state_id)
         total_demand = sum([item['water_value'] for item in demand_side])
-        supply_side = cls.get_supply_side_data(village_id,panchayat_id,block_id, district_id, state_id)
+        supply_side = cls.get_supply_side_data(panchayat_id,block_id, district_id, state_id)
         total_supply = sum([item['water_value'] for item in supply_side])
         water_budget.append({'category':'Demand', 'value': round((total_demand*100)/(total_demand + total_supply),0),'water_value':total_demand})
         water_budget.append({'category':'Supply', 'value': round((total_supply*100)/(total_demand + total_supply),0),'water_value':total_supply})
@@ -287,8 +287,8 @@ class BlockOrCensus:
         return entity_consumption
 
     @classmethod
-    def get_tga(cls,village_id,panchayat_id, block_id, district_id, state_id=2):
-        bt_id = BlockData.get_bt_id(village_id=village_id,panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
+    def get_tga(cls,panchayat_id, block_id, district_id, state_id=2):
+        bt_id = BlockData.get_bt_id(panchayat_id=panchayat_id,block_id=block_id, district_id=district_id, state_id=state_id)
         if bt_id:
             lulc_data = BlockLULC.get_block_lulc_data(bt_id)
             if lulc_data:
@@ -299,5 +299,5 @@ class BlockOrCensus:
                 if is_approved:
                     return sum(item['catchment_area'] for item in lulc_data)
         
-        lulc_data = LULCCensus.get_census_data_lulc(village_id,panchayat_id,block_id, district_id)
+        lulc_data = LULCCensus.get_census_data_lulc(panchayat_id,block_id, district_id)
         return sum(item['catchment_area'] for item in lulc_data)

@@ -17,8 +17,7 @@ def status():
         return redirect(url_for('mobile.index'))
     else:
         payload = json.loads(session_data)
-    progress_status = BlockData.get_progress_status(village_id=payload['village_id'],
-                                            panchayat_id=payload['panchayat_id'],
+    progress_status = BlockData.get_progress_status(panchayat_id=payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
     message = get_message()
@@ -42,8 +41,7 @@ def human():
         return redirect(url_for('mobile.index'))
     else:
         payload = json.loads(session_data)
-    human = BlockData.get_human_consumption(village_id=payload['village_id'],
-                                            panchayat_id=payload['panchayat_id'],
+    human = BlockData.get_human_consumption(panchayat_id=payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'],
                                             user_id=current_user.id)
@@ -54,8 +52,7 @@ def human():
             and any(row['is_approved'] is not None for row in human)
         )
     else:
-        human,is_approved = BlockData.get_dummy_human(village_id=payload['village_id'],
-                                            panchayat_id=payload['panchayat_id'],
+        human,is_approved = BlockData.get_dummy_human(panchayat_id=payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
         
@@ -79,8 +76,7 @@ def livestocks():
         return redirect(url_for('mobile.index'))
     else:
         payload = json.loads(session_data)
-    livestocks = BlockData.get_livestock_consumption(village_id=payload['village_id'],
-                                            panchayat_id=payload['panchayat_id'],
+    livestocks = BlockData.get_livestock_consumption(panchayat_id=payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'],
                                             user_id=current_user.id)
@@ -90,8 +86,7 @@ def livestocks():
             and any(row['is_approved'] is not None for row in livestocks)
         )
     else:
-        livestocks,is_approved = BlockData.get_dummy_livestock(village_id=payload['village_id'],
-                                            panchayat_id=payload['panchayat_id'],
+        livestocks,is_approved = BlockData.get_dummy_livestock(panchayat_id=payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
 
@@ -115,8 +110,7 @@ def crops():
         return redirect(url_for('mobile.index'))
     else:
         payload = json.loads(session_data)
-    crops = BlockData.get_crops_consumption(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+    crops = BlockData.get_crops_consumption(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'], 
                                             user_id=current_user.id)
@@ -126,8 +120,7 @@ def crops():
             and any(row['is_approved'] is not None for row in crops)
         )
     else:
-        crops,is_approved = BlockData.get_dummy_crops(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+        crops,is_approved = BlockData.get_dummy_crops(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
         
@@ -151,8 +144,7 @@ def industries():
         return redirect(url_for('mobile.index'))
     else:
         payload = json.loads(session_data)
-    industries = BlockData.get_block_industries(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+    industries = BlockData.get_block_industries(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'], 
                                             user_id=current_user.id)
@@ -162,8 +154,7 @@ def industries():
             and any(row['is_approved'] is not None for row in industries)
         )
     else:
-        industries,is_approved = BlockData.get_dummy_industries(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+        industries,is_approved = BlockData.get_dummy_industries(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
         
@@ -186,8 +177,7 @@ def surface():
         BlockData.update_surface(json_data, current_user.id)
         flash('Surface Water Data is Validated/Updated')
         return jsonify({'redirect_url': url_for('.status')})    
-    surface_supply = BlockData.get_surface_supply(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+    surface_supply = BlockData.get_surface_supply(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'], 
                                             user_id=current_user.id)
@@ -197,8 +187,7 @@ def surface():
             and any(row['is_approved'] is not None for row in surface_supply)
         )
     else:
-        surface_supply,is_approved = BlockData.get_dummy_surface(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+        surface_supply,is_approved = BlockData.get_dummy_surface(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
         
@@ -221,8 +210,7 @@ def rainfall():
         return redirect(url_for('mobile.index'))
     else:
         payload = json.loads(session_data)
-    rainfall = BlockData.get_rainfall_data(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+    rainfall = BlockData.get_rainfall_data(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'], 
                                             user_id=current_user.id)
@@ -251,8 +239,7 @@ def lulc():
         return redirect(url_for('mobile.index'))
     else:
         payload = json.loads(session_data)
-    lulc = BlockData.get_lulc_supply(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+    lulc = BlockData.get_lulc_supply(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'], 
                                             user_id=current_user.id)
@@ -262,8 +249,7 @@ def lulc():
             and any(row['is_approved'] is not None for row in lulc)
         )
     else:
-        lulc,is_approved = BlockData.get_dummy_lulc(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+        lulc,is_approved = BlockData.get_dummy_lulc(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
         
@@ -286,8 +272,7 @@ def ground():
         return redirect(url_for('mobile.index'))
     else:
         payload = json.loads(session_data)
-    ground_supply = BlockData.get_groundwater_supply(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+    ground_supply = BlockData.get_groundwater_supply(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'], 
                                             user_id=current_user.id)
@@ -297,8 +282,7 @@ def ground():
             and any(row['is_approved'] is not None for row in ground_supply)
         )
     else:
-        ground_supply,is_approved= BlockData.get_dummy_groundwater(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+        ground_supply,is_approved= BlockData.get_dummy_groundwater(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'])
 
@@ -322,8 +306,7 @@ def transfer():
         return redirect(url_for('mobile.index'))
     else:
         payload = json.loads(session_data)
-    transfer_data = BlockData.get_water_transfer(village_id=payload['village_id'],
-                                            panchayat_id = payload['panchayat_id'],
+    transfer_data = BlockData.get_water_transfer(panchayat_id = payload['panchayat_id'],
                                             block_id=payload['block_id'], 
                                             district_id=payload['district_id'], 
                                             user_id=current_user.id)

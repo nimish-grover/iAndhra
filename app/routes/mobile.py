@@ -5,8 +5,8 @@ from app.classes.block_or_census import BlockOrCensus
 from app.classes.budget_data import BudgetData
 from app.models import TerritoryJoin
 from app.models.districts import District
-from app.models.villages import Village
 from app.models.territory import TerritoryJoin
+from app.models.users import User
 
 
 blp = Blueprint("mobile","mobile")
@@ -36,18 +36,18 @@ def index():
         districts = TerritoryJoin.get_districts()
     return render_template("mobile/index.html", districts=districts)
 
-@blp.route("/villages", methods=['POST'])
-def villages():
-    json_data = request.json
-    if json_data is not None:
-        panchayat_id = int(json_data['panchayat_id'])
-    else:
-        return make_response('', 400)
-    villages = TerritoryJoin.get_villages(panchayat_id)
-    if villages:
-        return villages
-    else:
-        return make_response('', 400)
+# @blp.route("/villages", methods=['POST'])
+# def villages():
+#     json_data = request.json
+#     if json_data is not None:
+#         panchayat_id = int(json_data['panchayat_id'])
+#     else:
+#         return make_response('', 400)
+#     villages = TerritoryJoin.get_villages(panchayat_id)
+#     if villages:
+#         return villages
+#     else:
+#         return make_response('', 400)
 
 @blp.route("/panchayats", methods=['POST'])
 def panchayats():
@@ -57,12 +57,19 @@ def panchayats():
     else:
         return make_response('', 400)
     panchayats = TerritoryJoin.get_panchayats(block_id)
+    checked_panchayats = User.get_panchayat_id_by_block(block_id)
+    updated_panchayats = [
+        {**item, "disabled": True} if item["id"] in checked_panchayats else item 
+        for item in panchayats
+    ]
     if current_user.is_authenticated:
         if not current_user.isAdmin:
-            filtered_panchayats = [panchayat for panchayat in panchayats if panchayat['id'] == current_user.panchayat_id]
+            user_panchayats = User.get_panchayat_id_by_block(current_user.block_id,current_user.id)
+            filtered_panchayats = [panchayat for panchayat in panchayats if panchayat['id'] in user_panchayats]
+            # filtered_panchayats = [panchayat for panchayat in panchayats if panchayat['id'] == current_user.panchayat_id]
             return filtered_panchayats
-    if panchayats:
-        return panchayats
+    if updated_panchayats:
+        return updated_panchayats
     else:
         return make_response('', 400)
     
@@ -91,9 +98,9 @@ def home():
         return redirect(url_for('.index'))
     else:
         payload = json.loads(payload)
-    demand_side = BlockOrCensus.get_demand_side_data(payload['village_id'],payload['panchayat_id'],payload['block_id'], payload['district_id'])
-    supply_side = BlockOrCensus.get_supply_side_data(payload['village_id'],payload['panchayat_id'],payload['block_id'], payload['district_id'])
-    budget = BlockOrCensus.get_water_budget_data(payload['village_id'],payload['panchayat_id'],payload['block_id'], payload['district_id'])
+    demand_side = BlockOrCensus.get_demand_side_data(payload['panchayat_id'],payload['block_id'], payload['district_id'])
+    supply_side = BlockOrCensus.get_supply_side_data(payload['panchayat_id'],payload['block_id'], payload['district_id'])
+    budget = BlockOrCensus.get_water_budget_data(payload['panchayat_id'],payload['block_id'], payload['district_id'])
     budget_data = []
     budget_data.append(demand_side)
     budget_data.append(supply_side)
@@ -137,7 +144,7 @@ def human():
         return redirect(url_for('.index'))
     else:
         payload = json.loads(payload)
-    human, is_approved = BlockOrCensus.get_human_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    human, is_approved = BlockOrCensus.get_human_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     return render_template('mobile/demand/human.html',
         is_approved = is_approved, 
         source='Census 2011',
@@ -164,7 +171,7 @@ def livestocks():
         return redirect(url_for('.index'))
     else:
         payload = json.loads(payload)
-    livestock, is_approved = BlockOrCensus.get_livestock_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])  
+    livestock, is_approved = BlockOrCensus.get_livestock_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])  
     return render_template('mobile/demand/livestocks.html',
         is_approved = is_approved, 
         source = 'Livestock Census 2019',
@@ -188,7 +195,7 @@ def crops():
         return redirect(url_for('.index'))
     else:
         payload = json.loads(payload)
-    crops, is_approved = BlockOrCensus.get_crop_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id']) 
+    crops, is_approved = BlockOrCensus.get_crop_data(payload['panchayat_id'],payload['block_id'],payload['district_id']) 
     return render_template('mobile/demand/crops.html',
         is_approved = is_approved, 
         source = 'Crop Census 2019 (DES)', #https://data.desagri.gov.in/website/crops-apy-report-web
@@ -213,7 +220,7 @@ def industry():
         return redirect(url_for('.index'))
     else:
         payload = json.loads(payload)
-    industry_demand, is_approved = BlockOrCensus.get_industry_data(payload['village_id'],payload['panchayat_id'],payload['block_id'], payload['district_id'])
+    industry_demand, is_approved = BlockOrCensus.get_industry_data(payload['panchayat_id'],payload['block_id'], payload['district_id'])
     has_value = sum(item['count'] for item in industry_demand)
     if is_approved:
             source = 'The Industrial Water demand is reported nil by the block' 
@@ -254,7 +261,7 @@ def surface():
         return redirect(url_for('.index'))
     else:
         payload = json.loads(payload)
-    surface_water_supply, is_approved = BlockOrCensus.get_surface_data(payload['village_id'],payload['panchayat_id'],payload['block_id'], payload['district_id'])
+    surface_water_supply, is_approved = BlockOrCensus.get_surface_data(payload['panchayat_id'],payload['block_id'], payload['district_id'])
     waterbodies=[]
     if surface_water_supply:
         waterbodies = sorted(surface_water_supply, key = lambda x: x['value'], reverse=True)
@@ -283,7 +290,7 @@ def ground():
         return redirect(url_for('.index'))
     else:
         payload = json.loads(payload)
-    ground_water_supply, is_approved = BlockOrCensus.get_ground_data(payload['village_id'],payload['panchayat_id'],
+    ground_water_supply, is_approved = BlockOrCensus.get_ground_data(payload['panchayat_id'],
                                                 payload['block_id'],
                                                 payload['district_id'])
     
@@ -311,7 +318,7 @@ def rainfall():
         return redirect(url_for('.index'))
     else:
         payload = json.loads(payload)
-    rainfall_data, is_approved = BlockOrCensus.get_rainfall_data(payload['village_id'],payload['panchayat_id'],payload['block_id'], payload['district_id'])
+    rainfall_data, is_approved = BlockOrCensus.get_rainfall_data(payload['panchayat_id'],payload['block_id'], payload['district_id'])
     if len(rainfall_data)!=12:
         rainfall_data=None
     return render_template("mobile/supply/rainfall.html", 
@@ -330,7 +337,7 @@ def runoff():
         return redirect(url_for('.index'))
     else:
         payload = json.loads(payload)
-    runoff_data, is_approved = BlockOrCensus.get_runoff_data(payload['village_id'],payload['panchayat_id'],payload['block_id'], payload['district_id'])
+    runoff_data, is_approved = BlockOrCensus.get_runoff_data(payload['panchayat_id'],payload['block_id'], payload['district_id'])
     return render_template("mobile/supply/runoff.html", 
                            is_approved = is_approved,
                            source="Strange's Table",
@@ -439,36 +446,36 @@ def print():
         payload = json.loads(session_data)
         
     village_count = TerritoryJoin.get_villages_number_by_panchayat(payload['panchayat_id'],payload['block_id'],payload['district_id'])
-    tga = BlockOrCensus.get_tga(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    tga = BlockOrCensus.get_tga(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     
-    human,is_approved = BlockOrCensus.get_human_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    human,is_approved = BlockOrCensus.get_human_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     
-    livestocks,is_approved = BlockOrCensus.get_livestock_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    livestocks,is_approved = BlockOrCensus.get_livestock_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     filtered_livestock = [livestock for livestock in livestocks if livestock['count'] > 0]
     
-    crops,is_approved = BlockOrCensus.get_crop_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    crops,is_approved = BlockOrCensus.get_crop_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     filtered_crops = [crop for crop in crops if crop['count'] > 0]
     
-    industries = BudgetData.get_industry_demand(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    industries = BudgetData.get_industry_demand(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     filtered_industries = [industries for industries in industries if industries['count'] > 0]
     
-    surface_water,is_approved = BlockOrCensus.get_surface_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    surface_water,is_approved = BlockOrCensus.get_surface_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     filtered_surface_water = [waterbody for waterbody in surface_water if waterbody['count'] > 0]
     # surface_rename = {'whs':'WHS','lakes':'Lakes','ponds':'Ponds','tanks':'Tanks','reservoirs':'Resevoirs','others':'Others'}
     # filtered_surface_water = [{**item, 'category':surface_rename[item['category']]} for item in filtered_surface_water]
 
     
-    groundwater,is_approved = BlockOrCensus.get_ground_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id']) 
+    groundwater,is_approved = BlockOrCensus.get_ground_data(payload['panchayat_id'],payload['block_id'],payload['district_id']) 
     groundwater_rename = {'extraction':'Extracted Groundwater','extractable':'Extractable Groundwater','stage_of_extraction':'Stage of Extraction','category':'Category'}
     groundwater = [{**item, 'name':groundwater_rename[item['name']]} for item in groundwater]
     
-    water_transfer = BudgetData.get_water_transfer(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    water_transfer = BudgetData.get_water_transfer(payload['panchayat_id'],payload['block_id'],payload['district_id'])
 
-    runoff,is_approved = BlockOrCensus.get_runoff_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    runoff,is_approved = BlockOrCensus.get_runoff_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     run_off_rename = {'good':'Good Catchment','bad':'Bad Catchment','average':'Average Catchment'}
     runoff = [{**item, 'catchment':run_off_rename[item['catchment']]} for item in runoff]
     
-    rainfall,is_approved = BlockOrCensus.get_rainfall_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    rainfall,is_approved = BlockOrCensus.get_rainfall_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     rainfall_rename = {'Jan':'January','Feb':'February','Mar':'March','Apr':'April','May':'May','Jun':'June','Jul':'July',
                         'Aug':'August','Sep':'September','Oct':'October','Nov':'November','Dec':'December'}
     for item in rainfall:
@@ -478,12 +485,12 @@ def print():
         item['month'] = f"{full_month_name}-{year}"
 
     
-    demand_side = BlockOrCensus.get_demand_side_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    demand_side = BlockOrCensus.get_demand_side_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     demand_rename = {'Human':'Human Population Consumption','Livestock':'Livestock Population Consumption'
                         ,'Crop':'Crops Consumption','Industry':'Industry Consumption'}
     demand_side = [{**item, 'category':demand_rename[item['category']]} for item in demand_side]
     
-    supply_side = BlockOrCensus.get_supply_side_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    supply_side = BlockOrCensus.get_supply_side_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     # supply_rename = {'Surface':'Available Surface Water','Ground':'Ground Water'}
     for item in supply_side:
         if item['category'] == 'Transfer':
@@ -496,7 +503,7 @@ def print():
         # else:
         #     item['category'] = supply_side[item['category']]
     
-    water_budget = BlockOrCensus.get_water_budget_data(payload['village_id'],payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    water_budget = BlockOrCensus.get_water_budget_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
     water_budget_rename = {'Demand':'Total Demand','Supply':'Total Supply'}
     water_budget = [{**item, 'category':water_budget_rename[item['category']]} for item in water_budget]
     
@@ -516,9 +523,7 @@ def get_breadcrumbs(payload):
     return [
         {'name': payload['district_short_name'], 'href': '#'},
         {'name': payload['block_name'], 'href': '#'},
-        {'name': payload['panchayat_name'], 'href': '#'},
-        {'name': payload['village_name'], 'href': '#'}
-
+        {'name': payload['panchayat_name'], 'href': '#'}
     ]
 
 def get_supply_menu():

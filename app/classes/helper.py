@@ -207,6 +207,4 @@ class HelperClass():
         return [
             {'name': payload['district_short_name'], 'href': '#'},
             {'name': payload['block_name'], 'href': '#'},
-            {'name': payload['panchayat_name'], 'href': '#'},
-            {'name': payload['village_name'], 'href': '#'}
-        ]
+            {'name': payload['panchayat_name'], 'href': '#'}]

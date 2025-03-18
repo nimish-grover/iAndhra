@@ -71,7 +71,7 @@ class WaterbodyCensus(db.Model):
         }
     
     @classmethod
-    def get_census_data_waterbody(cls, villageid,panchayat_id,block_id, district_id):
+    def get_census_data_waterbody(cls,panchayat_id,block_id, district_id):
         query = db.session.query(
                 func.sum(cls.storage_capacity).label('storage_capacity'),
                 func.count(cls.waterbody_id).label('waterbody_count'),
@@ -82,7 +82,6 @@ class WaterbodyCensus(db.Model):
             ).filter(
                 TerritoryJoin.block_id == block_id,
                 TerritoryJoin.district_id == district_id,
-                TerritoryJoin.village_id == villageid,
                 TerritoryJoin.panchayat_id == panchayat_id
             ).group_by(
                 WaterbodyType.id,WaterbodyType.waterbody_name

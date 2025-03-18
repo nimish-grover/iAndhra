@@ -6,6 +6,7 @@ from passlib.hash import pbkdf2_sha256
 from app.models.districts import District
 from app.models.blocks import Block
 from app.models.panchayats import Panchayat
+from sqlalchemy.dialects.postgresql import ARRAY
 
 
 class User(UserMixin, db.Model):
@@ -16,13 +17,14 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(300))
     district_id = db.Column(db.Integer, db.ForeignKey("districts.id"), nullable=False)
     block_id = db.Column(db.Integer, db.ForeignKey("blocks.id"), nullable=False)
-    panchayat_id = db.Column(db.Integer, db.ForeignKey("panchayats.id"), nullable=False)
+    # panchayat_id = db.Column(db.Integer, db.ForeignKey("panchayats.id"), nullable=False)
+    panchayat_id = db.Column(ARRAY(db.Integer))
 
     isActive = db.Column(db.Boolean, nullable=False, default=False)
     isAdmin = db.Column(db.Boolean, nullable=False, default=False)
     district = db.relationship("District", backref=db.backref('districts', lazy='dynamic'))
     block = db.relationship("Block", backref=db.backref('blocks', lazy='dynamic'))
-    panchayat = db.relationship("Panchayat", backref=db.backref('panchayats', lazy='dynamic'))
+    # panchayat = db.relationship("Panchayat", backref=db.backref('panchayats', lazy='dynamic'))
     
     def __init__(self, username, password, district_id,block_id,panchayat_id, isActive, isAdmin):
         self.username = username
@@ -60,6 +62,15 @@ class User(UserMixin, db.Model):
     @classmethod
     def find_by_username(cls, username):
         return cls.query.filter_by(username=username).first()
+    
+    @classmethod
+    def get_panchayat_id_by_block(cls,block_id,user_id=None):
+        query = db.session.query(func.unnest(cls.panchayat_id)).filter(cls.block_id == block_id)
+        if user_id:
+            query = query.filter(cls.id == user_id)
+        result = query.all()
+        result = [item[0] for item in result]
+        return result
     
     @classmethod
     def get_all(cls):
