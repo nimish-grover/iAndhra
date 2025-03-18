@@ -2,7 +2,8 @@ from sqlalchemy import func
 from app.db import db
 from app.models import Block, District,Village
 from app.models.block_ground import BlockGround
-from app.models.block_territory import BlockTerritory	
+from app.models.block_territory import BlockTerritory
+from app.models.panchayats import Panchayat	
 
 class GroundwaterExtraction(db.Model):
     __tablename__ = "groundwater_extractions"
@@ -55,16 +56,16 @@ class GroundwaterExtraction(db.Model):
             
         }
     @classmethod
-    def get_census_data_groundwater(cls, village_id,panchayat_id,block_id, district_id):
+    def get_census_data_groundwater(cls,panchayat_id,block_id, district_id):
         query = db.session.query(
                 cls.extractable,
                 cls.extraction,
                 cls.stage_of_extraction,
                 cls.category,
-                cls.block_id.label('block_id')
         ).join(Block, Block.id==cls.block_id
         ).join(District, District.id==cls.district_id
-        ).filter(cls.block_id==block_id, District.id==district_id,Village.id == village_id)
+        ).join(Panchayat, Panchayat.id==panchayat_id
+        ).filter(cls.block_id==block_id, District.id==district_id,Panchayat.id==panchayat_id)
 
         results = query.all()
 

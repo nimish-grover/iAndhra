@@ -19,7 +19,7 @@
       <div class="carousel-item active">    
         {%if not monthwise_rainfall%}
         <div class="alert alert-warning mt-2" role="alert">
-            No data available for this Village
+            No data available for this Panchayat
         </div>
         {%endif%}    
         {{chart()}}
@@ -28,7 +28,7 @@
         <div class="overflow-y-scroll" style="height:30vh !important;">
         {%if not monthwise_rainfall%}
         <div class="alert alert-warning mt-2" role="alert">
-            No data available for this Village
+            No data available for this Panchayat
         </div>
         {%else%}
           <table class="table table-bordered  border-light table-sm fs-7 mb-0">

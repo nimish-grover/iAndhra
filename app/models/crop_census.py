@@ -53,7 +53,7 @@ class CropCensus(db.Model):
         }
     
     @classmethod
-    def get_census_data_crops(cls,village_id,panchayat_id, block_id, district_id):
+    def get_census_data_crops(cls,panchayat_id, block_id, district_id):
         query = db.session.query(
             func.sum(cls.crop_area).label('crop_area'),
             Crop.id.label('crop_id'),
@@ -65,7 +65,6 @@ class CropCensus(db.Model):
             TerritoryJoin.block_id==block_id,
             TerritoryJoin.district_id==district_id,
             TerritoryJoin.panchayat_id==panchayat_id,
-            TerritoryJoin.village_id==village_id
         ).group_by(
             Crop.id,Crop.coefficient,Crop.crop_name
         )

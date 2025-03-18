@@ -99,6 +99,15 @@ class User(UserMixin, db.Model):
         return cls.query.filter(cls.id==id).first()
     
     @classmethod
+    def get_panchayat_id_by_block(cls,block_id,user_id=None):
+        query = db.session.query(func.unnest(cls.panchayat_id)).filter(cls.block_id == block_id)
+        if user_id:
+            query = query.filter(cls.id == user_id)
+        result = query.all()
+        result = [item[0] for item in result]
+        return result
+    
+    @classmethod
     def get_active_count(cls):
         counts = db.session.query(
             func.count(case((cls.isActive == 'True', 1))).label('active_users'),

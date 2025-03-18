@@ -38,7 +38,7 @@ class LULCCensus(db.Model):
         }
     
     @classmethod
-    def get_census_data_lulc(cls, village_id,panchayat_id,block_id, district_id):
+    def get_census_data_lulc(cls,panchayat_id,block_id, district_id):
         query = db.session.query(
                 func.sum(cls.lulc_area).label('catchment_area'),
                 LULC.catchment,
@@ -47,12 +47,10 @@ class LULCCensus(db.Model):
                 ).join(Block, Block.id == TerritoryJoin.block_id
                 ).join(District, District.id==TerritoryJoin.district_id
                 ).join(Panchayat, Panchayat.id==TerritoryJoin.panchayat_id
-                ).join(Village, Village.id==TerritoryJoin.village_id
                 ).filter(
                     Block.id == block_id, 
                     District.id == district_id,
-                    Panchayat.id == panchayat_id,
-                    Village.id == village_id
+                    Panchayat.id == panchayat_id
                 ).group_by(LULC.catchment)
         
         results = query.all()
