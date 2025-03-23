@@ -73,6 +73,25 @@ def panchayats():
     else:
         return make_response('', 400)
     
+@blp.route("/user_panchayats",methods=['POST'])
+def user_panchayats():
+    json_data = request.json
+    if json_data is not None:
+        block_id = int(json_data['block_id'])
+    else:
+        return make_response('', 400)
+    panchayats = TerritoryJoin.get_panchayats(block_id)
+    user_id = session.get('user_data')['id']
+    checked_panchayats = User.get_panchayat_id_by_block(block_id,user_id)
+    updated_panchayats = [
+        {**item, "disabled": True} if item["id"] in checked_panchayats else item 
+        for item in panchayats
+    ]
+    if updated_panchayats:
+        return updated_panchayats
+    else:
+        return make_response('', 400)
+    
 @blp.route("/blocks", methods=['POST'])
 def blocks():
     json_data = request.json

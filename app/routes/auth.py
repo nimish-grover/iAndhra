@@ -204,6 +204,38 @@ def budget():
     
     return render_template('auth/budget.html',budget = budget_data,menu= HelperClass.get_admin_menu()) 
 
+@blp.route('/update_redirect',methods=['POST'])
+def update_redirect():
+    json_data = request.json
+    if json_data:
+        session['user_data'] = json_data
+        return jsonify({'redirect_url': url_for('auth.user_update')})
+    
+@blp.route('/user_update',methods=['POST','GET'])
+def user_update():
+    if request.method == 'POST':
+        panchayat_ids = request.form.get('dd_panchayats')
+        block_id = session.get('user_data')['block_id']
+        district_id = session.get('user_data')['district_id']
+        user_id = session.get('user_data')['id']
+        result = HelperClass.update_user_panchayat(user_id,panchayat_ids,block_id,district_id)
+        if result:
+            flash('User updated successfully!')
+        else:
+            flash('Error updating user!')
+        return redirect(url_for('auth.approve'))
+    message = get_message()
+    user_data = session.get('user_data')
+    district = {'id':user_data['district_id'],'name':user_data['district_name']}
+    block = {'id':user_data['block_id'],'name':user_data['block_name']}
+    isactive = User.check_active(user_data['id'])
+    user = {'name':user_data['username'],'id':user_data['id'],'isactive':isactive}
+    return render_template('auth/user_update.html',
+                           flash_message=message, 
+                           block=block,
+                           user=user,
+                           district=district)
+
 def get_message():
     messages = get_flashed_messages()
     # if len(messages) > 0:

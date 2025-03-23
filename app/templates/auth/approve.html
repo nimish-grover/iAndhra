@@ -9,11 +9,12 @@ input_hidden, floating_select, search_input,validation_input,validation_select%}
     <table class="table table-bordered table-sm fs-7 mb-0">
         <thead class="text-center">
             <tr>
-                <th>District</th>
+                <th>Dist</th>
                 <th>Block</th>
-                <th>Panchayat</th>
-                <th>Username</th>
+                <th>GP</th>
+                <th style="max-width: 130px;">Username</th>
                 <th>Status</th>
+                <th>Goto</th>
             </tr>
         </thead>
         <tbody id="tablebody">
@@ -29,7 +30,7 @@ input_hidden, floating_select, search_input,validation_input,validation_select%}
                 <td class="text-center" id="userPanchayat">
                     {{tooltip(full_name=row['panchayat_name'],name=row['panchayat_name'][:3]+'..')}}
                 </td>
-                <td class="text-start text-truncate" style="max-width: 150px;">
+                <td class="text-start text-truncate" style="max-width: 130px;">
                     {{row['username']}}
                 </td>
                 <td id="userStatus">                        
@@ -37,6 +38,11 @@ input_hidden, floating_select, search_input,validation_input,validation_select%}
                         <input class="form-check-input" type="checkbox" data-id="{{ row['id'] }}" 
                         role="switch" id="userIsActive" {% if row["isActive"] %} checked {% endif %}
                         onchange="toggleUserStatus(this)">
+                    </div>
+                </td>
+                <td id="goto">
+                    <div class="d-flex justify-content-center align-items-center">
+                        <a class="fa-solid fa-arrow-up-right-from-square mt-1" id = "goto{{row['id']}}" href="#"></a>
                     </div>
                 </td>
             </tr>
@@ -49,8 +55,71 @@ input_hidden, floating_select, search_input,validation_input,validation_select%}
 </div>
 <input type="hidden" name="user_data" id="userData" value="{{user_data}}">
 <input type="hidden" name="postUrl" id="postUrl" value="{{url_for('auth.approve')}}">
+<input type="hidden" name="gotoUrl" id="gotoUrl" value="{{url_for('auth.update_redirect')}}">
+
 {% endblock %}
 {% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Select all the arrow icons in the goto column
+    document.querySelectorAll("a.fa-solid.fa-arrow-up-right-from-square").forEach(icon => {
+        icon.addEventListener("click", function() {
+            // Get the parent row
+            const row = this.closest('tr');
+            // Get the hidden input with the user ID from the row
+            const userIdInput = row.querySelector('input[name="id"]');
+            const userId = parseInt(userIdInput.value, 10);
+            
+            console.log("User ID:", userId);
+            
+            // Fetch user data from the users array (userData)
+            const users = JSON.parse(document.getElementById('userData').value);
+            const userData = users.find(user => user.id === userId);
+            console.log("User Data:", userData);
+            
+            if (!userData) {
+                alert("User data not found!");
+                return;
+            }
+            
+            const gotoUrl = document.getElementById('gotoUrl').value;
+            
+            // Show loading indicator if you have one
+             toggleSpinner(); // Uncomment if you have a spinner function
+            
+            fetch(gotoUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide loading indicator if you have one
+                //  toggleSpinner(); // Uncomment if you have a spinner function
+                
+                if (data.redirect_url) {
+                    // Redirect to the provided URL
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert("No redirect URL provided.");
+                }
+            })
+            .catch(error => {
+                // Hide loading indicator if you have one
+                 toggleSpinner(); // Uncomment if you have a spinner function
+                
+                console.error("Error submitting data:", error);
+                alert("An error occurred while submitting data.");
+            });
+        });
+    });
+});
+</script>
 <script>
     // Search filter based on tooltip title
     document.getElementById("searchInput").addEventListener("input", function () {

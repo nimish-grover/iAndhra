@@ -39,4 +39,12 @@ class Panchayat(db.Model):
             "lgd_code": self.lgd_code,
             "panchayat_name": self.panchayat_name
         }
+        
+    @classmethod
+    def get_panchayat_name_by_id(cls,id):
+        query = cls.query.filter_by(id=id).first()
+        if query:
+            return query.panchayat_name
+        else:
+            return None
 

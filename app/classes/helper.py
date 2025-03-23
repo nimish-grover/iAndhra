@@ -110,6 +110,27 @@ class HelperClass():
             {'title': 'Panchayats In-Progress', 'value': cls.format_value(panchayat_in_progress), 'icon': 'fa-gears'},
             {'title': 'Panchayats Completed', 'value': cls.format_value(panchayat_completed), 'icon': 'fa-list-check'}]
     
+    @classmethod
+    def update_user_panchayat(cls,user_id,panchayat_ids,block_id,district_id):
+        user = User.get_by_id(user_id)
+        panchayat_arr = [int(item) for item in panchayat_ids.split(',')]
+        user.panchayat_id = panchayat_arr
+        user.update_db()
+        panchayat_check = User.get_user_panchayat_by_block(block_id)
+        for item in panchayat_check:
+            if item['user_id'] != user_id:
+                panchayat_check_arr = item['panchayat_ids']
+                for id in panchayat_check_arr:
+                    if id in panchayat_arr:
+                        user_duplicate_id = item['user_id']
+                        panchayat_check_arr.remove(id)
+                if user_duplicate_id:
+                    user_duplicate = User.get_by_id(user_duplicate_id)
+                    user_duplicate.panchayat_id = panchayat_check_arr
+                    user_duplicate.update_db()
+        return True
+        
+        
     def format_value(value):
         if value < 10:
             return f"{value:02d}"

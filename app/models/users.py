@@ -1,5 +1,5 @@
 from flask_login import UserMixin
-from sqlalchemy import case, func
+from sqlalchemy import ARRAY, case, func
 from app.db import db
 from passlib.hash import pbkdf2_sha256
 
@@ -16,13 +16,13 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(300))
     district_id = db.Column(db.Integer, db.ForeignKey("districts.id"), nullable=False)
     block_id = db.Column(db.Integer, db.ForeignKey("blocks.id"), nullable=False)
-    panchayat_id = db.Column(db.Integer, db.ForeignKey("panchayats.id"), nullable=False)
-
+    # panchayat_id = db.Column(db.Integer, db.ForeignKey("panchayats.id"), nullable=False)
+    panchayat_id = db.Column(ARRAY(db.Integer))
     isActive = db.Column(db.Boolean, nullable=False, default=False)
     isAdmin = db.Column(db.Boolean, nullable=False, default=False)
     district = db.relationship("District", backref=db.backref('districts', lazy='dynamic'))
     block = db.relationship("Block", backref=db.backref('blocks', lazy='dynamic'))
-    panchayat = db.relationship("Panchayat", backref=db.backref('panchayats', lazy='dynamic'))
+    # panchayat = db.relationship("Panchayat", backref=db.backref('panchayats', lazy='dynamic'))
     
     def __init__(self, username, password, district_id,block_id,panchayat_id, isActive, isAdmin):
         self.username = username
@@ -58,6 +58,22 @@ class User(UserMixin, db.Model):
         return pbkdf2_sha256.verify(password, self.password)
 
     @classmethod
+    def get_user_panchayat_by_block(cls,block_id):
+        query = db.session.query(
+            cls.id,
+            cls.username,
+            cls.panchayat_id
+        ).filter(cls.block_id == block_id).all()
+
+        results = []
+        for item in query:
+                results.append({
+                'user_id': item.id,
+                'panchayat_ids': item.panchayat_id
+            })
+        return results
+
+    @classmethod
     def find_by_username(cls, username):
         return cls.query.filter_by(username=username).first()
     
@@ -67,7 +83,9 @@ class User(UserMixin, db.Model):
             cls.id, 
             cls.username,
             cls.isActive,
-            Panchayat.panchayat_name,
+            District.id.label('district_id'),
+            Block.id.label('block_id'),
+            cls.panchayat_id,
             District.district_name,
             District.short_name,
             Block.block_name
@@ -75,9 +93,7 @@ class User(UserMixin, db.Model):
             District,District.id==cls.district_id
         ).join(
             Block, Block.id==cls.block_id
-        ).join(
-            Panchayat, Panchayat.id==cls.panchayat_id
-        ).order_by(District.district_name,Block.block_name,Panchayat.panchayat_name)
+        ).order_by(District.district_name,Block.block_name)
         
         results = query.all()
         
@@ -89,10 +105,18 @@ class User(UserMixin, db.Model):
                 'district_short_name':item.short_name,
                 'block_name': item.block_name,
                 'district_name':item.district_name,
-                'panchayat_name':item.panchayat_name
+                'district_id':item.district_id,
+                'block_id':item.block_id,
+                'panchayat_id':item.panchayat_id
             } for item in results]
-            return json_data
-        return None
+            
+        for item in json_data:
+            panchayat_name = ''
+
+            for id in item['panchayat_id']:
+                panchayat_name += str(Panchayat.get_panchayat_name_by_id(id))+','
+                item['panchayat_name'] = panchayat_name
+        return json_data
     
     @classmethod
     def get_by_id(cls, id):
@@ -106,6 +130,14 @@ class User(UserMixin, db.Model):
         result = query.all()
         result = [item[0] for item in result]
         return result
+    
+    @classmethod
+    def check_active(cls,user_id):
+        query = cls.query.filter_by(id=user_id).first()
+        if query:
+            return query.isActive
+        else:
+            return False
     
     @classmethod
     def get_active_count(cls):
