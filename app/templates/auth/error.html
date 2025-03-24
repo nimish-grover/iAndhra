@@ -1,0 +1,73 @@
+{% extends 'auth/base.html' %}
+{% block title %} Error {% endblock %}
+{% block css %}
+<style>
+    .error-code {
+        font-size: 4rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+    .error-message {
+        font-size: 1.5rem;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    .error-description {
+        color: #666;
+        margin-bottom: 25px;
+    }
+    .error-svg {
+        max-width: 300px;
+        margin-bottom: 20px;
+        animation: glitch 2s infinite;
+    }
+
+</style>
+{% endblock %}
+{% block content %}
+<div class="text-center d-flex align-items-center h-100 justify-content-center">
+    <div class="container mb-5">
+        <svg class="error-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 350">
+            <title>Error Illustration</title>
+            
+            <!-- Digital Distortion Background -->
+            <rect width="500" height="350" fill="#1a1a2e"/>
+            
+            <!-- Circuit Board Inspired Elements -->
+            <g stroke="#4a4e69" stroke-width="2" fill="none">
+                <path d="M50 50 H450 V250 H50 Z" stroke-dasharray="5,5"/>
+                <path d="M100 100 H400" stroke-dasharray="3,3"/>
+                <path d="M100 150 H400" stroke-dasharray="3,3"/>
+                <path d="M100 200 H400" stroke-dasharray="3,3"/>
+            </g>
+            
+            <!-- Digital Glitch Effects -->
+            <rect x="150" y="100" width="200" height="100" fill="#4a4e69" opacity="0.3"/>
+            
+            <!-- Error Signal Wave -->
+            <path d="M100 250 
+                     Q150 200, 200 250 
+                     T300 250 
+                     T400 250" 
+                  stroke="#e63946" stroke-width="4" fill="none"/>
+            
+            <!-- Digital Nodes -->
+            <circle cx="100" cy="250" r="10" fill="#f72585"/>
+            <circle cx="250" cy="250" r="15" fill="#4cc9f0"/>
+            <circle cx="400" cy="250" r="10" fill="#f72585"/>
+            
+            <!-- Error Icon -->
+            <text x="250" y="180" text-anchor="middle" font-size="80" fill="#e63946" font-weight="bold">
+                ⚠
+            </text>
+        </svg>
+        
+        <div class="error-code text-primary">{{ error_code }}</div>
+        <div class="error-message ">{{ error_message }}</div>
+        <div class="error-description">{{ description }}</div>
+        <a href="{{ url_for('mobile.index') }}" class="btn btn-primary">
+            <i class="fa-solid fa-house me-2"></i>Return to Home Page
+        </a>
+    </div>
+</div>
+{% endblock %}

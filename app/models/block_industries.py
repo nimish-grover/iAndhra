@@ -124,7 +124,7 @@ class BlockIndustry(db.Model):
             return None
     
     @classmethod
-    def get_block_industry_data(cls,bt_id):
+    def get_block_industry_data(cls,bt_id=0):
         query = db.session.query(
         Industry.id,
         Industry.industry_sector,

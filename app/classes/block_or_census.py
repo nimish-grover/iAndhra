@@ -107,7 +107,7 @@ class BlockOrCensus:
                 industry_consumption = cls.get_entity_consumption(industries, cls.COLORS)
                 if is_approved:
                     return industry_consumption, is_approved 
-        industry_consumption = []
+        industry_consumption = BlockIndustry.get_block_industry_data()
         return industry_consumption, False
     
     @classmethod
@@ -157,6 +157,7 @@ class BlockOrCensus:
                 if is_approved:
                     return ground_water_supply, is_approved
         # ground_water_supply = BudgetData.get_ground_supply(block_id, district_id)
+        ground_water_supply.insert(2,{'name':'Extraction Percentage','value':str(round(ground_water_supply[1]['value']/ground_water_supply[0]['value']*100,2))+' %'})
         return ground_water_supply, False
     
     @classmethod
@@ -239,6 +240,7 @@ class BlockOrCensus:
         total_surface = 0
         total_ground = 0
         total_transfer = 0 
+        total_runoff = 0
         surface,is_approved = cls.get_surface_data(panchayat_id,block_id, district_id,state_id)
         if surface:
             total_surface = sum([item['value'] for item in surface])
@@ -246,14 +248,18 @@ class BlockOrCensus:
         if ground:
             total_ground = [item['value'] for item in ground if item['name'] == 'extraction'][0]
         transfer = BudgetData.get_water_transfer(panchayat_id,block_id, district_id,state_id)
+        runoff ,is_approved = cls.get_runoff_data(panchayat_id,block_id, district_id,state_id)
+        if runoff:
+            total_runoff = sum([item['supply'] for item in runoff])
         if transfer:
             total_transfer = sum([item['entity_value'] for item in transfer])
         positive_transfer = 0
         if total_transfer > 0: 
             positive_transfer = total_transfer
-        total_supply = total_surface + total_ground + total_transfer
+        total_supply = total_surface + total_ground +total_runoff + total_transfer
         supply_side.append({'category':'Surface', 'value':round((total_surface*100)/(total_supply),0),'water_value':total_surface})
         supply_side.append({'category':'Ground', 'value':round((total_ground*100)/(total_supply),0),'water_value':total_ground})
+        supply_side.append({'category':'Runoff', 'value':round((total_runoff*100)/(total_supply),0),'water_value':total_runoff})
         supply_side.append({'category':'Transfer', 'value':round((positive_transfer*100)/(total_supply),0),'water_value':total_transfer})
         bg_colors = cls.COLORS
         supply_with_colors = [{**item, 'background': bg} for item, bg in zip(supply_side, bg_colors)]

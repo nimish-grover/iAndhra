@@ -17,12 +17,14 @@
 <div id="cardCarousel" class="carousel slide">
     <div class="carousel-inner">
       <div class="carousel-item active"> 
-        {%if not waterbodies%}
+        {%if not has_value%}
         <div class="alert alert-warning mt-2" role="alert">
             No data available for this Panchayat
         </div>
-        {%endif%}       
+        {%else%}
         {{chart()}}
+        {%endif%}       
+        
       </div>
       <div class="carousel-item">
         {%if not waterbodies%}

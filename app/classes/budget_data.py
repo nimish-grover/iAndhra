@@ -1,5 +1,7 @@
 import random
 
+from flask import request
+
 from app.models.block_industries import BlockIndustry
 from app.models.block_transfer import BlockWaterTransfer
 from app.models.crop_census import CropCensus
@@ -46,6 +48,10 @@ class BudgetData:
             return entity
         for item in entity:
             item['entity_consumption'] = round(cls.litre_to_hectare_meters((int(item['entity_value']) * cls.RURAL_CONSUMPTION * cls.DECADAL_GROWTH * cls.NUMBER_OF_DAYS * cls.WATER_LOSS)),2)
+        if '/panchayat' not in request.url:
+            total_consumption = sum(item['entity_consumption'] for item in entity)
+            total_human = sum(item['entity_value'] for item in entity)
+            combined_entity = [{'entity_consumption': total_consumption,'entity_value': total_human,'entity_id':0,'entity_name':'human'},]
         human_consumption = cls.get_entity_consumption(entity, bg_colors)
         return human_consumption
     
@@ -131,9 +137,11 @@ class BudgetData:
         for key,value in runoff_data[0].items():
             if not key=='rainfall_in_mm':
                 catchment_area = [item['catchment_area'] for item in lulc_data if item['catchment'] == key.lower()]
-                catchment_area = 0
+                # catchment_area = 0
                 if catchment_area:
                     catchment_area = catchment_area[0]
+                else:
+                    catchment_area = 0
                 runoff_yield = round((value/10) * rainfall_in_mm, 2)
                 catchment_yield = round(catchment_area * runoff_yield, 2)
                 item = {'catchment': key, 

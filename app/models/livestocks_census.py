@@ -1,4 +1,4 @@
-from sqlalchemy import func
+from sqlalchemy import and_, case, func
 from app.db import db
 from app.models.block_livestocks import BlockLivestock
 from app.models.block_territory import BlockTerritory
@@ -53,19 +53,22 @@ class LivestockCensus(db.Model):
     @classmethod
     def get_census_data_livestock(cls,panchayat_id, block_id, district_id):
         query = db.session.query(
-            func.sum(cls.livestock_count).label('livestock_count'),
+            func.coalesce(func.sum(
+                case(
+                    (and_(
+                        TerritoryJoin.block_id == block_id,
+                        TerritoryJoin.district_id == district_id,
+                        TerritoryJoin.panchayat_id == panchayat_id
+                    ), cls.livestock_count),
+                    else_=0
+                )
+            ), 0).label('livestock_count'),
             Livestock.livestock_name,
             Livestock.id.label('livestock_id'),
             Livestock.coefficient.label('coefficient')
-        ).join(Livestock, Livestock.id==cls.livestock_id
-        ).join(TerritoryJoin, TerritoryJoin.id == cls.tj_id
-        ).filter(
-            TerritoryJoin.block_id == block_id,
-            TerritoryJoin.district_id == district_id,
-            TerritoryJoin.panchayat_id == panchayat_id,
+        ).outerjoin(Livestock, Livestock.id == cls.livestock_id
+        ).outerjoin(TerritoryJoin, TerritoryJoin.id == cls.tj_id
         ).group_by(
-            TerritoryJoin.block_id,
-            TerritoryJoin.district_id,
             Livestock.id,
             Livestock.livestock_name,
             Livestock.coefficient

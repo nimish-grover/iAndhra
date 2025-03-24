@@ -17,15 +17,17 @@
 <div id="cardCarousel" class="carousel slide">
     <div class="carousel-inner">
       <div class="carousel-item active">      
-        {%if not catchments%}
+        {%if not has_value%}
         <div class="alert alert-warning mt-2" role="alert">
-            No data available for this Panchayat
+            No LULC data available for this Panchayat
         </div>
-        {%endif%}    
+        {%else%}
         {{chart()}}
+        {%endif%}    
+        
       </div>
       <div class="carousel-item">       
-        {%if not catchments%}
+        {%if not has_value%}
         <div class="alert alert-warning mt-2" role="alert">
             No data available for this Panchayat
         </div>
@@ -34,7 +36,7 @@
             {{table_head(headings=[
                 {'heading':'Catchment','subheading':'(type)'},
                 {'heading':'Runoff','subheading':'(in %age)'},
-                {'heading':'Yield','subheading':'(in Cu M)'},
+                {'heading':'Area','subheading':'(in Cu M)'},
                 {'heading':'Potential','subheading':'(in Ha M)'},
                 ])}}
             <tbody>

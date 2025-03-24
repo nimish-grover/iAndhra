@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, session, url_for
+from flask import Flask, session, url_for,render_template
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from app.models.users import User
@@ -9,7 +9,7 @@ from app.routes.auth import blp as authBlueprint
 from app.routes.desktop import blp as desktopBlueprint
 from app.routes.mobile import blp as mobileBlueprint
 from app.classes.helper import HelperClass
-
+from werkzeug.exceptions import HTTPException
 def create_app():
     app = Flask(__name__)
     load_dotenv()
@@ -65,9 +65,35 @@ def create_app():
             'available_themes': THEMES
         }
     # # register blueprints
+    @app.errorhandler(404)
+    def page_not_found(error):
+        return render_template('auth/error.html', 
+                            error_code=404, 
+                            error_message="Page Not Found", 
+                            description="The page you are looking for does not exist."), 404
 
+    # Error handler for 500 Internal Server errors
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        return render_template('auth/error.html', 
+                            error_code=500, 
+                            error_message="Internal Server Error", 
+                            description="Something went wrong on our end. Please try again later."), 500
+
+    # General error handler for other errors
+    @app.errorhandler(Exception)
+    def handle_exception(error):
+        # Pass through HTTP errors
+        if isinstance(error, HTTPException):
+            return error
+
+        # Non-HTTP exceptions
+        return render_template('auth/error.html', 
+                            error_code=500, 
+                            error_message="Unexpected Error", 
+                            description="An unexpected error occurred:"+error), 500
     app.register_blueprint(authBlueprint, url_prefix="/auth")
-    app.register_blueprint(desktopBlueprint, url_prefix="/block")
+    app.register_blueprint(desktopBlueprint, url_prefix="/panchayat")
     app.register_blueprint(mobileBlueprint)
 
     return app

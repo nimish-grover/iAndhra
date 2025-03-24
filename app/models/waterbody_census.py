@@ -1,4 +1,4 @@
-from sqlalchemy import func
+from sqlalchemy import and_, case, func
 from app.db import db
 from app.models.block_surface import BlockWaterbody
 from app.models.block_territory import BlockTerritory
@@ -76,19 +76,35 @@ class WaterbodyCensus(db.Model):
     @classmethod
     def get_census_data_waterbody(cls,panchayat_id,block_id, district_id):
         query = db.session.query(
-                func.sum(cls.storage_capacity).label('storage_capacity'),
-                func.count(cls.waterbody_id).label('waterbody_count'),
-                WaterbodyType.id.label('waterbody_id'),
-                WaterbodyType.waterbody_name
-            ).join(WaterbodyType, WaterbodyType.id==cls.waterbody_id
-            ).join(TerritoryJoin, TerritoryJoin.id==cls.tj_id
-            ).filter(
-                TerritoryJoin.block_id == block_id,
-                TerritoryJoin.district_id == district_id,
-                TerritoryJoin.panchayat_id == panchayat_id
-            ).group_by(
-                WaterbodyType.id,WaterbodyType.waterbody_name
-            )
+            func.coalesce(func.sum(
+                case(
+                    (and_(
+                        TerritoryJoin.panchayat_id == panchayat_id,
+                        TerritoryJoin.block_id == block_id,
+                        TerritoryJoin.district_id == district_id
+                    ), cls.storage_capacity),
+                    else_=0
+                )
+            ), 0).label('storage_capacity'),
+            func.coalesce(func.count(
+                case(
+                    (and_(
+                        TerritoryJoin.panchayat_id == panchayat_id,
+                        TerritoryJoin.block_id == block_id,
+                        TerritoryJoin.district_id == district_id
+                    ), 1),
+                    else_=None
+                )
+            ), 0).label('waterbody_count'),
+            WaterbodyType.id.label('waterbody_id'),
+            WaterbodyType.waterbody_name
+        ).outerjoin(cls, WaterbodyType.id == cls.waterbody_id
+        ).outerjoin(TerritoryJoin, TerritoryJoin.id == cls.tj_id
+        ).group_by(
+            WaterbodyType.id,
+            WaterbodyType.waterbody_name
+        ).order_by(WaterbodyType.id)
+
         results = query.all()
         if results:
             json_data = [{'entity_id':row.waterbody_id,

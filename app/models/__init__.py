@@ -47,3 +47,4 @@ from app.models.block_category import BlockCategory
 
 # Auth Tables
 from app.models.users import User
+from app.models.tickets import Ticket

@@ -21,7 +21,7 @@
 <div id="cardCarousel" class="carousel slide">
     <div class="carousel-inner">
       <div class="carousel-item active"> 
-        {% if industries %}       
+        {% if has_value %}       
         {{chart()}}
         {% else %}
         <div class="alert alert-warning mt-2" role="alert">
@@ -42,17 +42,17 @@
                 <tbody>
                     {% for industry in industries %}
                     <tr>
-                        <td class="text-start">{{industry.category | title}}</td>
-                        <td class="text-center">{{industry.count}}</td>
-                        <td class="text-end">{{'%0.2f'|format(industry.value|float)}}</td>
+                        <td class="text-start">{{industry.entity_name | title}}</td>
+                        <td class="text-center">{{industry.entity_count}}</td>
+                        <td class="text-end">{{'%0.2f'|format(industry.entity_consumption|float)}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
                 <tfoot>
                     <tr class="fw-semibold">
                         <td >Total</td>
-                        <td class="text-end">{{ crops | map(attribute='count') | sum | round(0) }}</td>
-                        <td class="text-end">{{ crops | map(attribute='value') | sum | round(0) }}</td>
+                        <td class="text-end">{{ crops | map(attribute='entity_count') | sum | round(0) }}</td>
+                        <td class="text-end">{{ crops | map(attribute='entity_consumption') | sum | round(0) }}</td>
                     </tr>
                 </tfoot>
             </table>

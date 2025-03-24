@@ -107,7 +107,7 @@ class LULCCensus(db.Model):
         return None
     
     @classmethod 
-    def get_lulc(cls,village_id,panchayat_id,block_id,district_id):
+    def get_lulc(cls,panchayat_id,block_id,district_id):
         query = db.session.query(
             func.round(func.sum(LULCCensus.lulc_area).cast(Numeric), 2).label('lulc_area'),
             LULC.id,
@@ -117,8 +117,7 @@ class LULCCensus(db.Model):
         ).join(Block, Block.id == TerritoryJoin.block_id
         ).join(District, District.id == TerritoryJoin.district_id
         ).join(Panchayat,Panchayat.id == TerritoryJoin.panchayat_id
-        ).join(Village, Village.id == TerritoryJoin.village_id
-        ).filter(Block.id == block_id, District.id == district_id,Panchayat.id == panchayat_id, Village.id == village_id
+        ).filter(Block.id == block_id, District.id == district_id,Panchayat.id == panchayat_id
         ).group_by(LULC.id)
         
         results = query.all()

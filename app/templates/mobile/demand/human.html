@@ -112,23 +112,9 @@
             formatter:'{c} Ha M'
         },
         color:[chart_data[0]['background']]
-        },
-        {
-        name: chart_data[1]['category'],
-        type: 'bar',
-        data: [chart_data[1]['value']],
-        label:{
-            show: true,
-            // position: [50, 10],
-            // align: 'center',
-            verticalAlign:'middle',
-            formatter:'{c} Ha M'
-        },
-        color:[chart_data[1]['background']]
         }
     ]
     };
-
     option && myChart.setOption(option);
 </script>
 {% endblock %}

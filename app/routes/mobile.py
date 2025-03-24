@@ -164,6 +164,9 @@ def human():
     else:
         payload = json.loads(payload)
     human, is_approved = BlockOrCensus.get_human_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
+    total_value = sum(item['value'] for item in human)
+    total_count = sum(item['count'] for item in human)
+    human = [{'value': total_value,'count': total_count,'id':0,'category':'human','background':human[0]['background']},]
     return render_template('mobile/demand/human.html',
         is_approved = is_approved, 
         source='Census 2011',
@@ -191,13 +194,16 @@ def livestocks():
     else:
         payload = json.loads(payload)
     livestock, is_approved = BlockOrCensus.get_livestock_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])  
+    has_value = sum(item['count'] for item in livestock)
+    chart_data = [item for item in livestock if item['count'] > 0]
     return render_template('mobile/demand/livestocks.html',
         is_approved = is_approved, 
         source = 'Livestock Census 2019',
         livestocks = livestock,
-        chart_data= json.dumps(livestock),
+        chart_data= json.dumps(chart_data),
         toggle_labels= ['chart', 'table'],
-        breadcrumbs= get_breadcrumbs(payload), 
+        breadcrumbs= get_breadcrumbs(payload),
+        has_value = has_value, 
         menu= get_demand_menu())  
 # @blp.route('/livestocks')
 # def livestocks():
@@ -240,19 +246,20 @@ def industry():
     else:
         payload = json.loads(payload)
     industry_demand, is_approved = BlockOrCensus.get_industry_data(payload['panchayat_id'],payload['block_id'], payload['district_id'])
-    has_value = sum(item['count'] for item in industry_demand)
+    has_value = sum(item['entity_count'] for item in industry_demand)
     if is_approved:
             source = 'The Industrial Water demand is reported nil by the block' 
     else:
         source = 'The Industrial Water demand is reported nil by the block' if has_value else 'Industry demand input is awaited.'
     return render_template("mobile/demand/industry.html",
-                        subtitle = '(in Ha M)' if is_approved else 'There are no industry in this Village',
-                        industries = industry_demand if has_value else None, 
+                        subtitle = '(in Ha M)' if is_approved else 'There are no industry in this Panchayat',
+                        industries = industry_demand, 
                         source = source,
                         is_approved = is_approved,
                         chart_data = json.dumps(industry_demand),
                         breadcrumbs= get_breadcrumbs(payload), 
                         menu= get_demand_menu(),
+                        has_value = has_value,
                         toggle_labels=['chart', 'table'])
 
 
@@ -281,15 +288,19 @@ def surface():
     else:
         payload = json.loads(payload)
     surface_water_supply, is_approved = BlockOrCensus.get_surface_data(payload['panchayat_id'],payload['block_id'], payload['district_id'])
+    has_value = sum(item['count'] for item in surface_water_supply)
+
     waterbodies=[]
     if surface_water_supply:
         waterbodies = sorted(surface_water_supply, key = lambda x: x['value'], reverse=True)
+    chart_data = [item for item in waterbodies if item['count'] > 0]
     return render_template('mobile/supply/surface.html',
                         is_approved = is_approved, 
                         source = 'India’s First waterbodies census 2019',  
                         waterbodies= waterbodies,
-                        chart_data= json.dumps(surface_water_supply),
+                        chart_data= json.dumps(chart_data),
                         toggle_labels= ['chart', 'table'],
+                        has_value = has_value,
                         breadcrumbs=get_breadcrumbs(payload), 
                         menu=get_supply_menu()
                         )
@@ -312,14 +323,16 @@ def ground():
     ground_water_supply, is_approved = BlockOrCensus.get_ground_data(payload['panchayat_id'],
                                                 payload['block_id'],
                                                 payload['district_id'])
-    
+    has_value = sum(item['value'] for item in ground_water_supply if item['name'] not in ['category', 'Extraction Percentage'])
+
     return render_template('mobile/supply/ground.html',
                         is_approved = is_approved,  
                         source = 'INDIA-Groundwater Resource Estimation System (IN-GRES)', 
                         groundwater= ground_water_supply,
                         chart_data= json.dumps(ground_water_supply),
                         toggle_labels= ['chart', 'table'],
-                        breadcrumbs=get_breadcrumbs(payload), 
+                        breadcrumbs=get_breadcrumbs(payload),
+                        has_value = has_value, 
                         menu=get_supply_menu())
 
 # @blp.route('/ground')
@@ -357,6 +370,7 @@ def runoff():
     else:
         payload = json.loads(payload)
     runoff_data, is_approved = BlockOrCensus.get_runoff_data(payload['panchayat_id'],payload['block_id'], payload['district_id'])
+    has_value = sum(item['supply'] for item in runoff_data)
     return render_template("mobile/supply/runoff.html", 
                            is_approved = is_approved,
                            source="Strange's Table",
@@ -364,6 +378,7 @@ def runoff():
                            chart_data = json.dumps(runoff_data),
                            breadcrumbs = get_breadcrumbs(payload),
                            menu= get_supply_menu(),
+                           has_value = has_value,
                            toggle_labels=['chart', 'table'])
 
 def render_supply_template(template, supply_function, template_data_key):

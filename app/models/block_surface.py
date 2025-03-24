@@ -87,12 +87,13 @@ class BlockWaterbody(db.Model):
         query = db.session.query(
             WaterbodyType.id,
             WaterbodyType.waterbody_name,
-            cls.storage,
-            cls.count,
-            cls.is_approved
-        ).join(WaterbodyType, WaterbodyType.id == cls.wb_type_id
-        ).filter(cls.bt_id == bt_id
-        ).order_by(cls.storage)
+            func.coalesce(BlockWaterbody.storage, 0).label("storage"),
+            func.coalesce(BlockWaterbody.count, 0).label("count"),
+            func.coalesce(BlockWaterbody.is_approved, False).label("is_approved")
+        ).outerjoin(
+            BlockWaterbody, 
+            (WaterbodyType.id == BlockWaterbody.wb_type_id) & (BlockWaterbody.bt_id == bt_id)
+        ).order_by(func.coalesce(BlockWaterbody.storage, 0))
 
         results = query.all()
 
