@@ -8,19 +8,19 @@
     {% if i + j < card_data|length %}
     {% set card = card_data[i + j] %}
     <div class="col {% if j == 0 %}justify-self-start pe-0{% else %}justify-self-end{% endif %}">
-        <div class="card shadow rounded-1 mb-1 px-2 border-primary border-bottom">
+        <div class="card shadow rounded-1 mb-1 px-2 border" style="border-color: rgba(var(--bs-gray-400), var(--bs-border-opacity)) !important;">
             <div class="py-3 px-1">
                 <div class="text-start">
                     <div class="row">
                         <div class="col">
-                            <div class="fs-7">{{ card.title }}</div>
+                            <div class="fs-7 text-muted">{{ card.title }}</div>
                         </div>
                         <div class="col-2 text-center p-0 pe-1 me-1">
-                            <span><i class="fa-solid {{ card.icon }}"></i></span>
+                            <span><i class="fa-solid text-muted {{ card.icon }}"></i></span>
                         </div>
                     </div>
                     <div class="">
-                        <div class="fs-1 fw-bold">{{ card.value }}</div>
+                        <div class="fs-1 text-muted fw-semibold">{{ card.value }}</div>
                     </div>
                 </div>
             </div>
@@ -30,7 +30,7 @@
     {% endfor %}
 </div>
 {% endfor %}
-<div class="card shadow rounded-1 mb-1 px-2 mt-2 d-flex align-items-center">
+<div class="card shadow rounded-1 mb-1 px-2 mt-2 d-flex align-items-center border" style="border-color: rgba(var(--bs-gray-400), var(--bs-border-opacity)) !important;">
     <div id="main" style="height: 38vh; width: 100%;"></div>
 </div>
 <input type="hidden" name="chartData" id="chartData" value="{{chart_data}}">
