@@ -25,9 +25,21 @@ docker stop $CONTAINER_NAME 2>/dev/null
 echo "Removing the old container..."
 docker rm $CONTAINER_NAME 2>/dev/null
 
+# Remove unused images (dangling images)
+echo "Removing unused Docker images..."
+docker image prune -f
+
+# Remove old versions of the image
+echo "Removing old Docker images of $IMAGE_NAME..."
+docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep "^$IMAGE_NAME" | awk '{print $2}' | xargs -r docker rmi -f
+
+# Remove unused build cache
+echo "Clearing unused build cache..."
+docker builder prune -a -f
+
 # Build a new Docker image
 echo "Building a new Docker image..."
-docker build -t $IMAGE_NAME . || { echo "Docker build failed!"; exit 1; }
+docker build --no-cache -t $IMAGE_NAME . || { echo "Docker build failed!"; exit 1; }
 
 # Run a new container with the updated image
 echo "Starting a new container..."
