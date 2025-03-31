@@ -4,8 +4,20 @@
 CONTAINER_NAME="wasca-container"
 IMAGE_NAME="wasca"
 VERSION_FILE="version.txt"
+NGINX_CONF="/etc/nginx/sites-enabled/default"
+MAINTENANCE_CONF="/etc/nginx/sites-enabled/maintenance.conf"
 
 echo "Updating the server..."
+
+# Enable maintenance mode
+echo "Switching to maintenance mode..."
+if [ -f "$MAINTENANCE_CONF" ]; then
+    ln -sf "$MAINTENANCE_CONF" "$NGINX_CONF"
+    nginx -s reload
+    echo "Maintenance page activated."
+else
+    echo "Warning: Maintenance configuration not found!"
+fi
 
 # Pull the latest changes from Git
 echo "Pulling latest changes from Git..."
@@ -44,5 +56,11 @@ docker build --no-cache -t $IMAGE_NAME . || { echo "Docker build failed!"; exit 
 # Run a new container with the updated image
 echo "Starting a new container..."
 docker run -d -p 8080:8080 --name $CONTAINER_NAME $IMAGE_NAME || { echo "Docker run failed!"; exit 1; }
+
+# Restore the original Nginx configuration
+echo "Restoring live Nginx configuration..."
+ln -sf "/etc/nginx/sites-available/live.conf" "$NGINX_CONF"
+nginx -s reload
+echo "Live site is back online."
 
 echo "Server update complete!"
