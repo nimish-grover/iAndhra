@@ -164,8 +164,8 @@ def human():
     else:
         payload = json.loads(payload)
     human, is_approved = BlockOrCensus.get_human_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
-    total_value = sum(item['value'] for item in human)
-    total_count = sum(item['count'] for item in human)
+    total_value = round(sum(item['value'] for item in human),2)
+    total_count = int(sum(item['count'] for item in human))
     human = [{'value': total_value,'count': total_count,'id':0,'category':'human','background':human[0]['background']},]
     return render_template('mobile/demand/human.html',
         is_approved = is_approved, 

@@ -54,7 +54,7 @@ class TerritoryJoin(db.Model):
             District.district_name.label('name'),
             District.lgd_code.label('code')
         ).join(District, District.id==cls.district_id
-        ).filter(cls.state_id==state_id
+        ).filter(cls.state_id==state_id, cls.district_id==3
         ).order_by(District.district_name
         ).distinct(District.id, District.district_name, District.lgd_code
         ).all()
