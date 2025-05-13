@@ -140,10 +140,8 @@
     </div>
     <div class="container px-5 d-print-none">
         <nav class="navbar navbar-expand-lg bg-transparent border-bottom p-0 border-dark">
-            <div class="container-fluid d-flex justify-content-between mb-3">
-                <img src="{{url_for('static',filename='assets/niti_logo.png')}}" alt="niti_logo" height="40px" class="ms-3">
-                <img src="{{url_for('static',filename='assets/jalagam.png')}}" alt="jalagam" height="40px" class="me-4">
-                <img src="{{url_for('static',filename='assets/giz_logo.png')}}" alt="giz_logo" height="40px">
+            <div class="row w-100 text-center">
+                <div class="navbar-text fw-bold text-dark fs-4">Water Budget
             </div>
         </nav>
 
@@ -252,7 +250,9 @@
                     </table>
                 </div>
                 <div class="text-center my-4">
+                    <a class="btn btn-outline-dark" href="{{url_for('mobile.home')}}" onclick="toggleSpinner();">Back</a>
                     <button class="btn btn-outline-dark" id="btnPrint">Print</button>
+
                 </div>
             </div>
             <div class="col-4 mt-1 px-1" style="border-right: 1px solid lightgray;">
@@ -497,10 +497,8 @@
 
     <div class="print d-none d-print-block">
         <nav class="navbar navbar-expand-lg bg-transparent border-bottom p-0 border-dark">
-            <div class="container-fluid d-flex justify-content-between mb-3">
-                <img src="{{url_for('static',filename='assets/niti_logo.png')}}" alt="niti_logo" height="40px" class="ms-3">
-                <img src="{{url_for('static',filename='assets/jalagam.png')}}" alt="jalagam" height="40px" class="me-4">
-                <img src="{{url_for('static',filename='assets/giz_logo.png')}}" alt="giz_logo" height="40px">
+            <div class="row w-100 text-center">
+                <div class="navbar-text fw-bold text-dark fs-4">Water Budget
             </div>
         </nav>
         <div class="row mb-2 mx-1">

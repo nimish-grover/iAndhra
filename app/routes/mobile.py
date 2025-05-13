@@ -500,7 +500,7 @@ def print():
 
     
     groundwater,is_approved = BlockOrCensus.get_ground_data(payload['panchayat_id'],payload['block_id'],payload['district_id']) 
-    groundwater_rename = {'extraction':'Extracted Groundwater','extractable':'Extractable Groundwater','stage_of_extraction':'Stage of Extraction','category':'Category'}
+    groundwater_rename = {'extraction':'Extracted Groundwater','Extraction Percentage':'Extraction Percentage','extractable':'Extractable Groundwater','stage_of_extraction':'Stage of Extraction','category':'Category'}
     groundwater = [{**item, 'name':groundwater_rename[item['name']]} for item in groundwater]
     
     water_transfer = BudgetData.get_water_transfer(payload['panchayat_id'],payload['block_id'],payload['district_id'])

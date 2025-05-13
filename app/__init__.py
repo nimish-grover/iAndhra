@@ -1,4 +1,5 @@
 import os
+import traceback
 from dotenv import load_dotenv
 from flask import Flask, session, url_for,render_template
 from flask_migrate import Migrate
@@ -86,12 +87,13 @@ def create_app():
         # Pass through HTTP errors
         if isinstance(error, HTTPException):
             return error
-
+        # Print the traceback to the terminal
+        traceback.print_exc()
         # Non-HTTP exceptions
         return render_template('auth/error.html', 
                             error_code=500, 
                             error_message="Unexpected Error", 
-                            description="An unexpected error occurred:"+error), 500
+                            description="An unexpected error occurred:"+str(error)), 500
     app.register_blueprint(authBlueprint, url_prefix="/auth")
     app.register_blueprint(desktopBlueprint, url_prefix="/panchayat")
     app.register_blueprint(mobileBlueprint)
