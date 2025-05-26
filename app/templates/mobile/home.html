@@ -8,7 +8,7 @@
         {{chart()}}
       </div>
       <div class="carousel-item">
-        {{table_title(title='Block Level Water Budget', subtitle='(All values are in Ha M)')}}
+        {{table_title(title='Panchayat Level Water Budget', subtitle='(All values are in Ha M)')}}
         <!-- <div id="#radio-button" class="d-flex justify-content-around fs-7 fw-bold py-1">
             <span>Human Consumption: </span>
             <div class="form-check form-check-inline">
@@ -27,7 +27,8 @@
         <table class="table table-bordered border-light table-sm fs-8 mb-0">
             {{table_head(headings=[
                 {'heading':'Description','subheading':''},
-                {'heading':'Value','subheading':''}])}}
+                {'heading':'Primary (From Entries)','subheading':''},
+                {'heading':'Secondary (From Websites)','subheading':''}])}}
           <!-- <thead class="text-center">
               <tr class="bg-light">
                   <th>Description</th>
@@ -36,43 +37,41 @@
           </thead> -->
           <tbody>
               <tr>
-                  <td colspan="2" class="fw-bold bg-opacity-50 p-0" style="background-color: #EB78C7">Demand</td>
+                  <td colspan="3" class="fw-bold bg-opacity-50 p-0" style="background-color: #EB78C7">Demand</td>
               </tr>
-              {% for row in demand_side %}
+              {% for row in demand %}
               <tr>
-                  <td class="text-start py-0">{{row.category | title}}</td>
-                  <td class="text-end py-0">{{row.water_value|indian_format}}</td>
+                  <td class="text-start py-0">{{row.entity | title}}</td>
+                  <td class="text-end py-0 {%if not row.primary.source%} text-warning {%endif%}">{{row.primary.consumption|indian_format}}</td>
+                  <td class="text-end py-0">{{row.secondary|indian_format}}</td>
               </tr>
               {% endfor %}
               <tr>
-                  <td colspan="2" class="fw-bold bg-opacity-50 p-0" style="background-color:#B492FF">Supply</td>
+                  <td colspan="3" class="fw-bold bg-opacity-50 p-0" style="background-color:#B492FF">Supply</td>
               </tr>
-              {% for row in supply_side %}
+              {% for row in supply %}
               <tr>
-                  <td class="text-start py-0">{{row.category | title}}</td>
-                  <td class="text-end py-0">{{row.water_value|indian_format}}</td>
+                  <td class="text-start py-0">{{row.entity | title}}</td>
+                  <td class="text-end py-0 {%if not row.primary.source%} text-warning {%endif%}">{{row.primary.consumption|indian_format}}</td>
+                  <td class="text-end py-0">{{row.secondary|indian_format}}</td>
               </tr>
               {% endfor %}
               <tr>
-                  <td colspan="2" class="fw-bold bg-opacity-50 text-center p-0" style="background-color: #E592FA">Water Budget</td>
+                  <td colspan="3" class="fw-bold bg-opacity-50 text-center p-0" style="background-color: #E592FA">Water Budget</td>
               </tr>
-              {% for row in water_budget %}
+              {% for row in budget %}
               <tr>
-                  <td class="text-start py-0">{{row.category | title}}</td>
-                  <td class="text-end py-0">{{row.water_value|indian_format}}</td>
+                  <td class="text-start py-0">{{row.entity | title}}</td>
+                  
+                  <td class="text-end py-0 {% if row.entity == 'budget' %} text-{%if row.primary > 0 %}success{% else %}danger{% endif %} {% endif %}">{{row.primary|indian_format}}</td>
+                  <td class="text-end py-0 {% if row.entity == 'budget' %} text-{%if row.secondary > 0 %}success{% else %}danger{% endif %} {% endif %}">{{row.secondary|indian_format}}</td>
+                  
               </tr>
               {% endfor %}
-              <tr>
-                {% set total_supply = water_budget[1]['water_value'] %}
-                {% set total_demand = water_budget[0]['water_value'] %}
-                {% set water_budget = total_supply - total_demand %}
-                <td class="text-start py-0 text-{% if water_budget < 0 %}danger{% else %}success{% endif %}-emphasis">{% if water_budget < 0 %}Deficient{% else %}Surplus{% endif %}</td>
-                <td class="text-end py-0 text-{% if water_budget < 0 %}danger{% else %}success{% endif %}-emphasis">{{water_budget|indian_format}}</td>
-              </tr>
           </tbody>
       </table>
       
-      <div class="d-none d-md-block"><a href="{{url_for('mobile.print')}}" target="_blank" class="btn btn-outline-dark mx-auto btn-sm mt-3">Print</a></div>  
+      <div class="d-block"><a href="{{url_for('mobile.print')}}" target="_blank" class="btn btn-outline-dark mx-auto btn-sm mt-3">Print</a></div>  
       </div>
     </div>
   </div>

@@ -4,8 +4,8 @@
 input_hidden, floating_select, search_input,validation_input,validation_select%}
 {% block content %}
 {{table_title(title='Approve Users')}}
-{{search_input(placeholder='Search Panchayat')}}
-<div class="overflow-y-scroll" style="height:30vh !important;">
+{{search_input(placeholder='Search Username')}}
+<div class="overflow-y-scroll" style="height:60vh !important;">
     <table class="table table-bordered table-sm fs-7 mb-0">
         <thead class="text-center">
             <tr>
@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", function() {
         
         rows.forEach(row => {
             // Get the anchor element in the cell that contains the tooltip
-            const anchorElement = row.cells[2].querySelector('a[data-bs-title]');
+            const anchorElement = row.cells[3].querySelector('a[data-bs-title]');
             
             // Check if anchor element exists and has the data-bs-title attribute
             if (anchorElement) {

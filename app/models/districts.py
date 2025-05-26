@@ -44,6 +44,15 @@ class District(db.Model):
             return None
         
     @classmethod
+    def get_by_id(cls,district_id):
+        results = cls.query.filter_by(id=district_id).first()
+        if results:
+            json_data = {'tj_id':0,'id':results.id,'name':results.district_name,'code':results.lgd_code}
+            return json_data
+        else:
+            return None
+        
+    @classmethod
     def get_short_name(cls,district_id):
         results = cls.query.filter_by(id=district_id).all()
         if results:

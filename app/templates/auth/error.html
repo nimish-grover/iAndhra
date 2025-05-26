@@ -1,5 +1,6 @@
 {% extends 'auth/base.html' %}
 {% block title %} Error {% endblock %}
+{% from 'mobile/components.html' import tooltip%}
 {% block css %}
 <style>
     .error-code {
@@ -14,7 +15,7 @@
     }
     .error-description {
         color: #666;
-        margin-bottom: 25px;
+        margin-bottom: 15px;
     }
     .error-svg {
         max-width: 300px;
@@ -63,11 +64,24 @@
         </svg>
         
         <div class="error-code text-primary">{{ error_code }}</div>
-        <div class="error-message ">{{ error_message }}</div>
-        <div class="error-description">{{ description }}</div>
-        <a href="{{ url_for('mobile.index') }}" class="btn btn-primary">
-            <i class="fa-solid fa-house me-2"></i>Return to Home Page
+        <div class="error-message ">{{tooltip(full_name=description,name=error_message)}}</div>
+        <div class="error-description">{%if message%}{{ message }}{%else%}{{description}}{%endif%}</div>
+
+        <div class="row">
+            <div class="col-6">
+                <a href="{{ url_for('auth.feedback') }}" class="btn btn-outline-dark mt-2 w-100 btn-sm py-2">
+            <i class="fa-solid fa-comment me-2"></i>Provide Feedback
         </a>
+            </div>
+            <div class="col-6">
+                <a href="{{ url_for('mobile.index') }}" class="btn btn-primary mt-2 w-100 btn-sm py-2">
+            <i class="fa-solid fa-house me-2"></i>Return to Home
+        </a>
+            </div>
+        </div>
+        
+        
+        
     </div>
 </div>
 {% endblock %}

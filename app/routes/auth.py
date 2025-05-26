@@ -1,12 +1,18 @@
 from flask import Blueprint, flash, get_flashed_messages, json, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from app.classes.helper import HelperClass
+from app.models.feedback import Feedback
 from app.models.states import State
 from app.models.territory import TerritoryJoin
 from app.models.users import User
 from app.classes.block_or_census import BlockOrCensus
+import os
+from werkzeug.utils import secure_filename
 
 blp = Blueprint("auth","auth")
+UPLOAD_FOLDER = os.path.join(os.getcwd(),'app','static','uploads', 'feedback')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+
 
 @blp.route('/register', methods=['POST','GET'])
 def register():
@@ -235,6 +241,86 @@ def user_update():
                            block=block,
                            user=user,
                            district=district)
+
+@blp.route('/user_profile',methods=['GET'])
+@login_required
+def user_profile():
+    message = get_message()
+    district = {'id':current_user.district_id,'name':HelperClass.get_district_name(current_user.district_id)}
+    block = {'id':current_user.block_id,'name':HelperClass.get_block_name(current_user.block_id)}
+    panchayat = current_user.panchayat_id
+    panchayat_name = HelperClass.get_panchayat_name(current_user.panchayat_id)
+    isactive = current_user.isActive
+    user = {'name':current_user.username,'id':current_user.id,'isactive':isactive}
+    return render_template('auth/profile.html',
+                           flash_message=message, 
+                           block=block,
+                           user=user,
+                           district=district,
+                           panchayats=panchayat_name)
+    
+
+@blp.route('/feedback', methods=['GET', 'POST'])
+def feedback():
+    if request.method == 'POST':
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        category = request.form.get('category')
+        email = request.form.get('email') or None
+        message = request.form.get('message')
+        if category == 'other':
+            category = request.form.get('other_issue')
+        
+
+        file = request.files.get('attachment')
+        file_path = None
+
+        if file and file.filename and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(file_path)
+
+        new_feedback = Feedback(
+            category=category,
+            email=email,
+            message=message,
+            file_path=filename if file_path else None
+        )
+
+        new_feedback.save_to_db()
+
+        flash("Thank you! Your feedback has been submitted.")
+        return redirect(url_for('auth.feedback'))
+
+    return render_template("auth/feedback.html",email=current_user.username if current_user.is_authenticated else '',)
+
+@blp.route('/view_feedback', methods=['GET'])
+def view_feedback():
+    if not current_user.isAdmin:
+        flash('You must be admin to view this page!')
+        return redirect(url_for('auth.login'))
+    feedbacks = Feedback.get_all_feedback()
+    return render_template("auth/view_feedback.html", feedbacks=feedbacks,menu= HelperClass.get_admin_menu())
+
+@blp.route('/reset_pwd', methods=['POST', 'GET'])
+def reset_pwd_no_login():
+    if request.method == 'POST':
+        username = request.form.get('email')
+        user = User.find_by_username(username.lower())
+        if user:
+            feedback = Feedback('reset_password',user.username, 'Request to reset password', None)
+            feedback.save_to_db()
+            
+            flash('Reset password request submitted successfully!')
+            return redirect(url_for('auth.login'))
+        else:
+            flash('Username entered is wrong !')
+        return redirect(url_for('auth.login'))  
+    return render_template("auth/reset_pwd_no_login.html")
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 
 def get_message():
     messages = get_flashed_messages()

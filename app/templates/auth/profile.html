@@ -1,0 +1,43 @@
+{% extends 'auth/base.html' %}
+{% block title %}Profile{% endblock %}
+{% block css %}
+<style>
+.form-control[readonly], .form-select[disabled] {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="row align-items-center justify-content-center mb-5" style="height: 30%;">
+    <div class="d-flex justify-content-center">
+        <div class="rounded-circle d-flex justify-content-center align-items-center border border-secondary" style="width: 130px; height: 130px; ">
+          <i class="fa-solid fa-user" style="font-size: 50px;"></i>
+        </div>
+    </div>    
+    <div class="text-center fs-4 mt-2">{{ user['name'] }}</div>
+</div>
+
+<div class="form-floating mb-3">
+    <input type="text" class="form-control" id="district_display" value="{{ district['name'] }}" readonly>
+    <label for="district_display">District</label>
+</div>
+
+<div class="form-floating mb-3">
+    <input type="text" class="form-control" id="block_display" value="{{ block['name'] }}" readonly>
+    <label for="block_display">Block</label>
+</div>
+
+<div class="form-floating mb-3">
+    <textarea class="form-control" id="panchayats_display" readonly style="height: 100px;" >{{ panchayats | join(', ') }}
+    </textarea>
+    <label for="panchayats_display">Panchayats</label>
+</div>
+
+<div class="row mb-3 mt-5">
+    <div class="col">
+        <a class="btn btn-outline-dark w-100" id="btnBack" href="{{ url_for('mobile.home') }}">Back</a>
+    </div>
+</div>
+
+{% endblock %}

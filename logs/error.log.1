@@ -1,0 +1,113 @@
+2025-05-25 10:19:43,633 [ERROR] in __init__: Unhandled Exception
+Traceback (most recent call last):
+  File "/home/grove/miniconda3/envs/flask/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/miniconda3/envs/flask/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/routes/mobile.py", line 115, in home
+    demand,supply,budget = BlockOrCensus.get_primary_secondary_budget(payload['panchayat_id'],payload['block_id'], payload['district_id'])
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 484, in get_primary_secondary_budget
+    primary_supply = cls.get_primary_supply(panchayat_id,block_id,district_id,state_id)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 459, in get_primary_supply
+    runoff,is_approved = cls.get_primary_runoff(panchayat_id, block_id, district_id)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 519, in get_primary_runoff
+    is_approved_lulc = all(row['is_approved'] for row in lulc_data if row['is_approved'] is not None)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'NoneType' object is not iterable
+2025-05-25 10:19:43,641 [ERROR] in __init__: URL: http://127.0.0.1:8080/home
+2025-05-25 10:19:43,643 [ERROR] in __init__: Payload: {"block_id": "61", "block_name": "Kudair", "district_id": "3", "district_name": "Ananthapuramu", "district_short_name": "ANA", "panchayat_id": "1342", "panchayat_name": "Aravakur"}
+2025-05-25 10:20:18,318 [ERROR] in __init__: Unhandled Exception
+Traceback (most recent call last):
+  File "/home/grove/miniconda3/envs/flask/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/miniconda3/envs/flask/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/routes/mobile.py", line 115, in home
+    demand,supply,budget = BlockOrCensus.get_primary_secondary_budget(payload['panchayat_id'],payload['block_id'], payload['district_id'])
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 484, in get_primary_secondary_budget
+    primary_supply = cls.get_primary_supply(panchayat_id,block_id,district_id,state_id)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 459, in get_primary_supply
+    runoff,is_approved = cls.get_primary_runoff(panchayat_id, block_id, district_id)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 519, in get_primary_runoff
+    is_approved_lulc = all(row['is_approved'] for row in lulc_data if row['is_approved'] is not None)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'NoneType' object is not iterable
+2025-05-25 10:20:18,322 [ERROR] in __init__: URL: http://127.0.0.1:8080/home
+2025-05-25 10:20:18,324 [ERROR] in __init__: Payload: {"block_id": "61", "block_name": "Kudair", "district_id": "3", "district_name": "Ananthapuramu", "district_short_name": "ANA", "panchayat_id": "1342", "panchayat_name": "Aravakur"}
+2025-05-25 10:23:05,844 [ERROR] in __init__: Unhandled Exception
+Traceback (most recent call last):
+  File "/home/grove/miniconda3/envs/flask/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/miniconda3/envs/flask/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/routes/mobile.py", line 115, in home
+    demand,supply,budget = BlockOrCensus.get_primary_secondary_budget(payload['panchayat_id'],payload['block_id'], payload['district_id'])
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 486, in get_primary_secondary_budget
+    primary_supply = cls.get_primary_supply(panchayat_id,block_id,district_id,state_id)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 458, in get_primary_supply
+    primary_ground = round(sum([float(item['entity_consumption']) for item in ground]), 2)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 458, in <listcomp>
+    primary_ground = round(sum([float(item['entity_consumption']) for item in ground]), 2)
+                                      ~~~~^^^^^^^^^^^^^^^^^^^^^^
+TypeError: string indices must be integers, not 'str'
+2025-05-25 10:23:05,853 [ERROR] in __init__: URL: http://127.0.0.1:8080/home
+2025-05-25 10:23:05,856 [ERROR] in __init__: Payload: {"block_id": "71", "block_name": "Singanamala", "district_id": "3", "district_name": "Ananthapuramu", "district_short_name": "ANA", "panchayat_id": "1529", "panchayat_name": "Lolur"}
+2025-05-25 10:24:30,831 [ERROR] in __init__: Unhandled Exception
+Traceback (most recent call last):
+  File "/home/grove/miniconda3/envs/flask/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/miniconda3/envs/flask/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/routes/mobile.py", line 115, in home
+    demand,supply,budget = BlockOrCensus.get_primary_secondary_budget(payload['panchayat_id'],payload['block_id'], payload['district_id'])
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 486, in get_primary_secondary_budget
+    primary_supply = cls.get_primary_supply(panchayat_id,block_id,district_id,state_id)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 458, in get_primary_supply
+    primary_ground = round(sum([float(item['extraction']) for item in ground]), 2)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 458, in <listcomp>
+    primary_ground = round(sum([float(item['extraction']) for item in ground]), 2)
+                                      ~~~~^^^^^^^^^^^^^^
+TypeError: string indices must be integers, not 'str'
+2025-05-25 10:24:30,837 [ERROR] in __init__: URL: http://127.0.0.1:8080/home
+2025-05-25 10:24:30,839 [ERROR] in __init__: Payload: {"block_id": "71", "block_name": "Singanamala", "district_id": "3", "district_name": "Ananthapuramu", "district_short_name": "ANA", "panchayat_id": "1529", "panchayat_name": "Lolur"}
+2025-05-25 10:32:19,950 [ERROR] in __init__: Unhandled Exception
+Traceback (most recent call last):
+  File "/home/grove/miniconda3/envs/flask/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/miniconda3/envs/flask/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/routes/mobile.py", line 115, in home
+    demand,supply,budget = BlockOrCensus.get_primary_secondary_budget(payload['panchayat_id'],payload['block_id'], payload['district_id'])
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 488, in get_primary_secondary_budget
+    primary_supply = cls.get_primary_supply(panchayat_id,block_id,district_id,state_id)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 472, in get_primary_supply
+    is_approved = all(row['is_approved'] for row in transfer if row['is_approved'] is not None) if transfer else False
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/grove/GitHub/iAndhra/app/classes/block_or_census.py", line 472, in <genexpr>
+    is_approved = all(row['is_approved'] for row in transfer if row['is_approved'] is not None) if transfer else False
+                                                                ~~~^^^^^^^^^^^^^^^
+KeyError: 'is_approved'

@@ -1,0 +1,27 @@
+{% extends 'auth/base.html' %}
+{% block title %}Reset Password{% endblock %}
+{% from 'mobile/components.html' import table_title%}
+{% block content %}
+<div class="container">
+    {{table_title(title='Submit Password Reset Request')}}
+    <form action="{{ url_for('auth.reset_pwd_no_login') }}" method="POST" enctype="multipart/form-data">
+
+        <!-- Floating for Email -->
+        <div class="form-floating mb-3 mt-4">
+            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+            <label for="email">Email</label>
+        </div>
+
+
+        <button type="submit" class="btn btn-primary w-100" onclick="toggleSpinner();">Submit</button>
+        <div class="text-center fs-9">
+            <small class="text-muted">Inform Admin after placing request.</small>
+        </div>
+        <div class="text-start mt-1 fs-8">
+            <small class="text-muted">* Your password after reset will be first four letters of your username and '_123'.</small>
+            <small class="text-muted">Ex- Username:example@gmail.com Password: exam_123</small>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

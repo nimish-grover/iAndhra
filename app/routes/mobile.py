@@ -36,18 +36,6 @@ def index():
         districts = TerritoryJoin.get_districts()
     return render_template("mobile/index.html", districts=districts)
 
-# @blp.route("/villages", methods=['POST'])
-# def villages():
-#     json_data = request.json
-#     if json_data is not None:
-#         panchayat_id = int(json_data['panchayat_id'])
-#     else:
-#         return make_response('', 400)
-#     villages = TerritoryJoin.get_villages(panchayat_id)
-#     if villages:
-#         return villages
-#     else:
-#         return make_response('', 400)
 
 @blp.route("/panchayats", methods=['POST'])
 def panchayats():
@@ -124,6 +112,7 @@ def home():
     budget_data.append(demand_side)
     budget_data.append(supply_side)
     budget_data.append(budget)
+    demand,supply,budget = BlockOrCensus.get_primary_secondary_budget(payload['panchayat_id'],payload['block_id'], payload['district_id'])
     return render_template("mobile/home.html", 
                            breadcrumbs = get_breadcrumbs(payload),
                            demand_side = budget_data[0],
@@ -131,30 +120,11 @@ def home():
                            water_budget = budget_data[2],
                            menu = get_main_menu(),
                            chart_data = json.dumps(budget_data),
+                           demand = demand,
+                           supply = supply,
+                           budget = budget,
                            toggle_labels=['chart', 'table'])
 
-# @blp.route('/home')
-# def home():
-#     payload = session.get('payload')
-#     if not payload:
-#         return redirect(url_for('.index'))
-#     else:
-#         payload = json.loads(payload)
-#     demand_side = BudgetData.get_demand_side(payload['block_id'], payload['district_id'])
-#     supply_side = BudgetData.get_supply_side(payload['block_id'], payload['district_id'], payload['state_id'])
-#     budget = BudgetData.get_water_budget(payload['block_id'], payload['district_id'], payload['state_id'])
-#     budget_data = []
-#     budget_data.append(demand_side)
-#     budget_data.append(supply_side)
-#     budget_data.append(budget)
-#     return render_template("mobile/home.html", 
-#                            breadcrumbs = get_breadcrumbs(payload),
-#                            demand_side = budget_data[0],
-#                            supply_side = budget_data[1],
-#                            water_budget = budget_data[2],
-#                            menu = get_main_menu(),
-#                            chart_data = json.dumps(budget_data),
-#                            toggle_labels=['chart', 'table'])
 
 @blp.route('/human')
 def human():
@@ -175,16 +145,7 @@ def human():
         toggle_labels= ['chart', 'table'],
         breadcrumbs= get_breadcrumbs(payload), 
         menu= get_demand_menu())
-# @blp.route('/human')
-# def human():
-#     """
-#     Handle human demand route.
-#     """
-#     return render_demand_template(
-#         "mobile/demand/human.html",
-#         demand_function=BudgetData.get_human_consumption,
-#         template_data_key='human'
-    # )
+
 
 @blp.route('/livestocks')
 def livestocks():
@@ -205,13 +166,7 @@ def livestocks():
         breadcrumbs= get_breadcrumbs(payload),
         has_value = has_value, 
         menu= get_demand_menu())  
-# @blp.route('/livestocks')
-# def livestocks():
-#     return render_demand_template(
-#         "mobile/demand/livestocks.html",
-#         demand_function=BudgetData.get_livestock_consumption,
-#         template_data_key='livestocks'
-#     )
+
 
 @blp.route('/crops')
 def crops():
@@ -230,13 +185,7 @@ def crops():
         breadcrumbs= get_breadcrumbs(payload), 
         menu= get_demand_menu())
 
-# @blp.route('/crops')
-# def crops():
-#     return render_demand_template(
-#         "mobile/demand/crops.html",
-#         demand_function=BudgetData.get_crops_consumption,
-#         template_data_key='crops'
-#     )
+
 
 @blp.route('/industry')
 def industry():
@@ -263,22 +212,6 @@ def industry():
                         toggle_labels=['chart', 'table'])
 
 
-# @blp.route('/industry')
-# def industry():
-#     payload = session.get('payload')
-#     if not payload:
-#         return redirect(url_for('.index'))
-#     else:
-#         payload = json.loads(payload)
-#     industry_demand = BudgetData.get_industry_demand(payload['block_id'], payload['district_id'], payload['state_id'])
-#     has_value = sum(item['count'] for item in industry_demand)
-#     return render_template("mobile/demand/industry.html",
-#                         subtitle = '(in Ha M)' if has_value > 0 else 'There are no industry in this block',
-#                         industries = industry_demand, 
-#                         chart_data = json.dumps(industry_demand),
-#                         breadcrumbs= get_breadcrumbs(payload), 
-#                         menu= get_demand_menu(),
-#                         toggle_labels=['chart', 'table'])
 
 @blp.route('/surface')
 def surface():
@@ -305,13 +238,6 @@ def surface():
                         menu=get_supply_menu()
                         )
 
-# @blp.route('/surface')
-# def surface():
-#     return render_supply_template(
-#         "mobile/supply/surface.html",
-#         supply_function=BudgetData.get_surface_supply,
-#         template_data_key='waterbodies'
-    # )
 
 @blp.route('/ground')
 def ground():
@@ -335,13 +261,6 @@ def ground():
                         has_value = has_value, 
                         menu=get_supply_menu())
 
-# @blp.route('/ground')
-# def ground():
-#     return render_supply_template(
-#         "mobile/supply/ground.html",
-#         supply_function=BudgetData.get_ground_supply,
-#         template_data_key='groundwater'
-#     )
 
 @blp.route('/rainfall')
 def rainfall():
@@ -448,10 +367,6 @@ def change_theme():
             'name': 'Dark Theme',
             'stylesheet': url_for('static',filename='scss/dark_theme.css')
         },
-        # 'orange': {
-        #     'name': 'Orange Theme',
-        #     'stylesheet': url_for('static',filename='scss/orange_theme.css')
-        # },
         'pink': {
             'name': 'Pink Theme',
             'stylesheet': url_for('static',filename='scss/styles.css')
@@ -466,10 +381,6 @@ def change_theme():
         })
     return jsonify({'success': False}), 400
 
-@blp.route('/version')
-def version():
-    version = HelperClass.get_version()
-    return {"version": version}
 
 @blp.route('/print')
 def print():
@@ -519,33 +430,13 @@ def print():
         item['month'] = f"{full_month_name}-{year}"
 
     
-    demand_side = BlockOrCensus.get_demand_side_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
-    demand_rename = {'Human':'Human Population Consumption','Livestock':'Livestock Population Consumption'
-                        ,'Crop':'Crops Consumption','Industry':'Industry Consumption'}
-    demand_side = [{**item, 'category':demand_rename[item['category']]} for item in demand_side]
-    
-    supply_side = BlockOrCensus.get_supply_side_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
-    # supply_rename = {'Surface':'Available Surface Water','Ground':'Ground Water'}
-    for item in supply_side:
-        if item['category'] == 'Transfer':
-            if item['value'] >0:
-                item['category'] = 'Water Transfer Inward'
-                transfer_indicator = 'inward'
-            else:
-                transfer_indicator = 'outward'
-                item['category'] = 'Water Transfer Outward'
-        # else:
-        #     item['category'] = supply_side[item['category']]
-    
-    water_budget = BlockOrCensus.get_water_budget_data(payload['panchayat_id'],payload['block_id'],payload['district_id'])
-    water_budget_rename = {'Demand':'Total Demand','Supply':'Total Supply'}
-    water_budget = [{**item, 'category':water_budget_rename[item['category']]} for item in water_budget]
+    demand,supply,budget = BlockOrCensus.get_primary_secondary_budget(payload['panchayat_id'],payload['block_id'], payload['district_id'])
     
     return render_template('mobile/print.html',village_count=village_count,tga=round(tga,2),human_data=human,human=json.dumps(human),
                            livestock_data=filtered_livestock,crop_data=filtered_crops,
                            surface_water_data=filtered_surface_water,industry_data=filtered_industries,
-                           groundwater_data=groundwater, transfer_data=water_transfer, runoff_data=runoff,rainfall_data=rainfall,transfer_indicator=transfer_indicator,
-                           water_budget=water_budget,demand_side=demand_side,supply_side=supply_side,payload=payload)
+                           groundwater_data=groundwater, transfer_data=water_transfer, runoff_data=runoff,rainfall_data=rainfall,
+                           budget=budget,demand=demand,supply=supply,payload=payload)
 
 def get_breadcrumbs(payload):
     """

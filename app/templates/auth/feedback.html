@@ -1,0 +1,67 @@
+{% extends 'auth/base.html' %}
+{% block title %}Feedback / Query{% endblock %}
+{% from 'mobile/components.html' import table_title%}
+{% block content %}
+<div class="container">
+    {{table_title(title='Submit a Query or Feedback')}}
+    <form action="{{ url_for('auth.feedback') }}" method="POST" enctype="multipart/form-data">
+
+        <!-- Floating for Email -->
+        <div class="form-floating mb-3 mt-4">
+            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" value="{{email}}" disabled>
+            <label for="email">Email</label>
+        </div>
+
+        <!-- Category (select - not natively supported for floating) -->
+        <div class="mb-3">
+            <select name="category" id="category" class="form-select" required onchange="toggleOtherIssueInput()">
+                <option value="">Select issue type</option>
+                <option value="update_panchayat">Update Panchayats</option>
+                <!-- <option value="password_reset">Password Reset</option> -->
+                <option value="bug_report">Report a Bug</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        <!-- Hidden text input for "Other" issue -->
+<div class="form-floating mb-3" id="otherIssueDiv" style="display:none;">
+    <input type="text" class="form-control" id="otherIssue" name="other_issue" placeholder="Describe your issue">
+    <label for="otherIssue">Please specify your issue</label>
+</div>
+
+        <!-- Floating for Message -->
+        <div class="form-floating mb-3">
+            <textarea name="message" class="form-control" placeholder="Your message" id="message" style="height: 120px;" required></textarea>
+            <label for="message">Message</label>
+        </div>
+
+        <!-- File Upload (no floating style possible) -->
+        <div class="mb-3 text-start">
+            <label for="attachment" class="form-label fs-7">Attach a file (optional) </label>
+            
+            <input type="file" class="form-control" name="attachment" id="attachment" accept=".jpg,.jpeg,.png">
+            <div class="text-center">
+                <small class="text-muted text-center fs-8">Only images are accepted.</small>
+            </div>
+            
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" onclick="toggleSpinner();">Submit</button>
+    </form>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+function toggleOtherIssueInput() {
+    const categorySelect = document.getElementById('category');
+    const otherIssueDiv = document.getElementById('otherIssueDiv');
+    if (categorySelect.value === 'other') {
+        otherIssueDiv.style.display = 'block';
+        document.getElementById('otherIssue').setAttribute('required', 'required');
+    } else {
+        otherIssueDiv.style.display = 'none';
+        document.getElementById('otherIssue').removeAttribute('required');
+    }
+}
+</script>
+{%endblock%}

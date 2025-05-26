@@ -1,0 +1,55 @@
+{% extends 'auth/base.html' %}
+{% block title %}Error Logs{% endblock %}
+
+{% block content %}
+<div class="container mt-2">
+  <h5 class="mb-3">Error Log Viewer</h5>
+
+  <!-- File Selection Form -->
+<div class="d-flex gap-2 justify-content-center align-items-center">
+  <!-- Form 1: Dropdown File Selection -->
+  <form method="get" action="{{ url_for('developer.error_logs') }}" class="d-flex">
+    <select name="file" class="form-select w-auto" onchange="handleDropdownChange(this)">
+      <option value="">-- Select a file --</option>
+      {% for file in files %}
+      <option value="{{ file }}" {% if selected_file == file %}selected{% endif %}>{{ file }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <!-- Form 2: Delete Button -->
+  {% if selected_file %}
+  <form method="post" action="{{ url_for('developer.delete_log_file') }}" class="d-inline">
+    <input type="hidden" name="filename" value="{{ selected_file }}">
+    <button class="btn btn-danger btn-sm" type="submit" onclick="toggleSpinner();">Delete This File</button>
+  </form>
+  {% endif %}
+</div>
+
+
+
+  {% if selected_file %}
+  <div class="mt-4">
+    <h6>Content of <code>{{ selected_file }}</code> :</h6>
+    <pre style="background: #f9f9f9; padding: 1rem; border: 1px solid #ccc; height: 480px; overflow-y: auto;">
+{{ content }}
+    </pre>
+  </div>
+  {% endif %}
+
+  {% if files %}
+  <form method="post" action="{{ url_for('developer.delete_log_file') }}" class="mt-3">
+    <input type="hidden" name="filename" value="all">
+    <button class="btn btn-outline-danger btn-sm" type="submit">Delete All Files</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
+{%block scripts%}
+<script>
+    function handleDropdownChange(selectElement) {
+    toggleSpinner();
+    selectElement.form.submit();
+}
+</script>
+{%endblock%}

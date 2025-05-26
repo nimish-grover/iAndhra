@@ -3,6 +3,9 @@ from flask import url_for
 
 from app.classes.block_or_census import BlockOrCensus
 from app.models.block_progress import BlockProgress
+from app.models.blocks import Block
+from app.models.districts import District
+from app.models.panchayats import Panchayat
 from app.models.users import User
 
 
@@ -181,6 +184,22 @@ class HelperClass():
             return formatted_integer
         else:
             return f"{formatted_integer}.{decimal_part}"
+        
+    def get_district_name(district_id):
+        district = District.get_by_id(district_id)
+        return district['name'] if district else None
+    
+    def get_block_name(block_id):
+        block = Block.get_by_id(block_id)
+        return block['name'] if block else None
+    
+    def get_panchayat_name(panchayat_id):
+        panchayat = []
+        for id in panchayat_id:
+            panchayat_name = Panchayat.get_panchayat_name_by_id(id)
+            panchayat.append(panchayat_name if panchayat_name else None)
+                
+        return panchayat
 
     def get_supply_menu():
         return [
@@ -215,7 +234,7 @@ class HelperClass():
             { "route" : url_for('.dashboard'), "label":"dashboard", "icon":"fa-solid fa-gauge"},
             { "route" : url_for('.approve'), "label":"approve", "icon":"fa-solid fa-list-check"},
             { "route" : url_for('.progress'), "label":"progress", "icon":"fa-solid fa-bars-progress"},
-            # { "route" : url_for('.budget'), "label":"budget", "icon":"fa-solid fa-scale-unbalanced"}
+            { "route" : url_for('.view_feedback'), "label":"feedback", "icon":"fa-solid fa-comments"}
         ]
     
     def get_breadcrumbs(payload):

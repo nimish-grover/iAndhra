@@ -33,4 +33,13 @@ class Block(db.Model):
             "lgd_code": self.lgd_code,
             "block_name": self.block_name
         }
+        
+    @classmethod
+    def get_by_id(cls,block_id):
+        results = cls.query.filter_by(id=block_id).first()
+        if results:
+            json_data = {'tj_id':0,'id':results.id,'name':results.block_name,'code':results.lgd_code}
+            return json_data
+        else:
+            return None
 

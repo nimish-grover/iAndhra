@@ -83,7 +83,8 @@ class BlockWaterTransfer(db.Model):
     def get_water_transfer_by_block(cls, bt_id):
         query = db.session.query(
             func.concat(BlockTransferType.transfer_type, ' (', BlockTransferSector.sector, ')').label('transfer_type_sector'),
-            func.coalesce(cls.transfer_quantity, 0).label('transfer_quantity')
+            func.coalesce(cls.transfer_quantity, 0).label('transfer_quantity'),
+            cls.is_approved
             ).select_from(BlockTransferType
             ).join(BlockTransferSector, text("1=1")
             ).outerjoin(
@@ -97,6 +98,7 @@ class BlockWaterTransfer(db.Model):
 
         if results:
             json_data = [{
+                'is_approved': result.is_approved,
                 'entity_name': result.transfer_type_sector,
                 'entity_value': result.transfer_quantity
                 } for result in results]

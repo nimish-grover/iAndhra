@@ -1,0 +1,120 @@
+{% extends 'auth/base.html' %}
+{% block title %}Feedbacks{% endblock %}
+{% from 'mobile/components.html' import table_title%}
+{% block css %}
+<style>
+    .nav-pills .nav-link {
+        color: var(--bs-secondary);
+        border-radius: 0;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .nav-pills .nav-link.active {
+        color: var(--bs-primary);
+        border-bottom: 2px solid var(--bs-primary);
+        background-color: transparent;
+    }
+
+    #no-feedback-message {
+        display: none;
+        text-align: center;
+        color: black;
+        font-style: italic;
+        margin-top: 1rem;
+    }
+    .feedback-item {
+  display: none;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+{{table_title(title='User Feedbacks / Queries')}}
+
+<!-- Dropdown Navigation -->
+<div class="mb-3 mt-3 text-start">
+  <label for="categorySelect" class="text-muted fs-7 ms1">Select Category</label>
+  <select class="form-select w-100" id="categorySelect" onchange="filterCategoryDropdown(this)">
+    <option value="all">All</option>
+    <option value="update_panchayat">Update Panchayat</option>
+    <option value="reset_password">Reset Password</option>
+    <option value="bug_report">Bug Report</option>
+    <option value="other">Other</option>
+  </select>
+</div>
+
+
+<!-- Feedback List -->
+<div id="filtered-content" class="overflow-y-scroll" style="height:60vh !important;">
+  {% for fb in feedbacks %}
+  <div class="card mb-2 feedback-item" data-category="{{ fb.category }}">
+    <div class="card-body p-3">
+      <div class="d-flex justify-content-between">
+        <div class="text-start">
+          <h6 class="mb-1 text-start">{{ fb.category.replace('_', ' ').title() }}</h6>
+          <small class="text-muted text-start fs-7">{{ fb.email }}</small>
+          <p class="text-start mb-1">{{ fb.message }}</p>
+        </div>
+        <div class="text-end">
+          <small class="text-muted">{{ fb.submitted_at.strftime('%b %d, %Y') }}</small><br>
+          {% if fb.file_path %}
+          <a href="{{ url_for('static', filename='uploads/feedback/' ~ fb.file_path) }}" target="_blank">
+            <i class="fas fa-paperclip text-muted mt-3"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div id="no-feedback-message">No feedback found in this category.</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterCategoryDropdown(select) {
+  const category = select.value;
+
+  const knownCategories = ['update_panchayat', 'reset_password', 'bug_report'];
+  const feedbackItems = document.querySelectorAll('.feedback-item');
+  let anyVisible = false;
+
+  feedbackItems.forEach(item => {
+    const itemCategory = item.getAttribute('data-category');
+    let show = false;
+
+    if (category === 'all') {
+      show = true;
+    } else if (category === 'other') {
+      show = !knownCategories.includes(itemCategory);
+    } else {
+      show = (itemCategory === category);
+    }
+
+    item.style.display = show ? 'block' : 'none';
+    if (show) anyVisible = true;
+  });
+
+  const filteredContent = document.getElementById('filtered-content');
+  filteredContent.scrollTop = 0;
+
+  const noMsg = document.getElementById('no-feedback-message');
+  noMsg.style.display = anyVisible ? 'none' : 'block';
+  filteredContent.style.display = anyVisible ? 'block' : 'none';
+}
+
+window.addEventListener('DOMContentLoaded', function () {
+  const select = document.getElementById('categorySelect');
+  if (select) {
+    filterCategoryDropdown(select);
+  }
+});
+</script>
+
+{% endblock %}
+
+
