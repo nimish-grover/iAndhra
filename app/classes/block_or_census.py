@@ -369,7 +369,7 @@ class BlockOrCensus:
         if bt_id:
             human = BlockPop.get_block_population_data(bt_id)
             entity_count = sum([float(item['entity_count']) for item in human]) if human else 0
-            filtered_human = [item for item in human if item['entity_count'] > 0]
+            filtered_human = [item for item in human if item['entity_count'] > 0] if human else []
             is_approved = all(row['is_approved'] for row in filtered_human if row['is_approved'] is not None)
             if not entity_count or not is_approved:
                 human = BudgetData.get_human_consumption(panchayat_id,block_id,district_id)
@@ -382,8 +382,8 @@ class BlockOrCensus:
                 human = {'consumption': human_consumption, 'count': primary_human,'source': True}
                 
             livestock = BlockLivestock.get_block_livestock_data(bt_id)
-            entity_count = sum([float(item['entity_count']) for item in livestock]) if human else 0
-            filtered_livestock = [item for item in livestock if item['entity_count'] > 0]
+            entity_count = sum([float(item['entity_count']) for item in livestock]) if livestock else 0
+            filtered_livestock = [item for item in livestock if item['entity_count'] > 0] if livestock else []
             is_approved = all(row['is_approved'] for row in filtered_livestock if row['is_approved'] is not None)
             if not entity_count or not is_approved:
                 livestock = BudgetData.get_livestock_consumption(panchayat_id,block_id,district_id)
@@ -401,7 +401,7 @@ class BlockOrCensus:
                 
             crops = BlockCrop.get_block_crop_data(bt_id)
             entity_count = sum([float(item['entity_count']) for item in crops]) if crops else 0
-            filtered_crops = [item for item in crops if item['entity_count'] > 0]
+            filtered_crops = [item for item in crops if item['entity_count'] > 0] if crops else []
             is_approved = all(row['is_approved'] for row in filtered_crops if row['is_approved'] is not None)
             if not entity_count or not is_approved:
                 crops = BudgetData.get_crops_consumption(panchayat_id,block_id,district_id)
@@ -436,7 +436,7 @@ class BlockOrCensus:
         if bt_id:
             surface = BlockWaterbody.get_block_waterbody_data(bt_id)
             entity_count = sum([float(item['entity_count']) for item in surface]) if surface else 0
-            filtered_surface = [item for item in surface if item['entity_count'] > 0]
+            filtered_surface = [item for item in surface if item['entity_count'] > 0] if surface else []
             is_approved = all(row['is_approved'] for row in filtered_surface if row['is_approved'] is not None)
             if not entity_count or not is_approved:
                 surface = BudgetData.get_surface_supply(panchayat_id,block_id,district_id)
